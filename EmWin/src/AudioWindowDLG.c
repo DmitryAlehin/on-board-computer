@@ -64,8 +64,6 @@ extern GUIHandles GuiHandles;
 extern BT_General_States_Typedef BT_General_State;
 extern BT_States_Typedef BT_State;
 extern BT_Values_Typedef BT_Value;
-extern MVH_Values_Typedef MVH_Value;
-extern MVH_States_Typedef MVH_States;
 // USER END
 
 /*********************************************************************
@@ -325,7 +323,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		TEXT_SetWrapMode(hItem, GUI_WRAPMODE_WORD);
 		TEXT_SetText(hItem, "");
     // USER START (Optionally insert additional code for further widget initialization)
-		if(MVH_States == MVH_AUX)
+		if(/*AUX*/ 1)
 		{			
 			hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_13);//2
 			WM_HideWindow(hItem);
@@ -376,10 +374,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		TEXT_SetText(hItem, (char *)Data);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
 		sprintf((char *)Data, "%.1f V", Car_Param.Voltage);
-		TEXT_SetText(hItem, (char *)Data);
-		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);		
-		TEXT_SetText(hItem, (char *)MVH_Value.MVH_TEXT);
-		
+		TEXT_SetText(hItem, (char *)Data);		
 		if(BT_General_State == BT_INIT_OK)
 		{
 			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);
@@ -434,12 +429,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 			sprintf((char *)Data, "%.1f V", Car_Param.Voltage);
 			TEXT_SetText(hItem, (char *)Data);
 			pMsg->MsgId = 0;
-			break;
-		case WM_UPDATE_MVH:
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);		
-			TEXT_SetText(hItem, (char *)MVH_Value.MVH_TEXT);		
-			pMsg->MsgId = 0;
-			break;
+			break;		
 		case WM_UPDATE_BT:
 			if(BT_General_State == BT_INIT_OK)
 			{

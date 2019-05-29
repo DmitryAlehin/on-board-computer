@@ -86,8 +86,6 @@ Purpose     : Dialog box include
 #include "KNOB.h"
 #include "OBDII.h"
 #include "BK8000L.h"
-#include "MVH_08UB.h"
-#include "MCP41_42XXX.h"
 #include "W25Q.h"
 
 extern RTC_HandleTypeDef hrtc;

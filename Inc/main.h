@@ -91,15 +91,6 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define BT_EN_Pin GPIO_PIN_2
 #define BT_EN_GPIO_Port GPIOE
-#define EN_A_Pin GPIO_PIN_0
-#define EN_A_GPIO_Port GPIOC
-#define EN_B_Pin GPIO_PIN_1
-#define EN_B_GPIO_Port GPIOC
-#define MOSI_MVH_Pin GPIO_PIN_2
-#define MOSI_MVH_GPIO_Port GPIOC
-#define CLK_MVH_Pin GPIO_PIN_3
-#define CLK_MVH_GPIO_Port GPIOC
-#define CLK_MVH_EXTI_IRQn EXTI3_IRQn
 #define SDIO_EN_Pin GPIO_PIN_4
 #define SDIO_EN_GPIO_Port GPIOC
 #define T_IRQ_Pin GPIO_PIN_5
@@ -108,10 +99,6 @@ void Error_Handler(void);
 #define F_CS_GPIO_Port GPIOB
 #define T_CS_Pin GPIO_PIN_12
 #define T_CS_GPIO_Port GPIOB
-#define K2_CS_Pin GPIO_PIN_6
-#define K2_CS_GPIO_Port GPIOB
-#define K1_CS_Pin GPIO_PIN_7
-#define K1_CS_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 #define DMA_BUFFER_OBD_SIZE 30
 #define DMA_BUFFER_BT_SIZE 15

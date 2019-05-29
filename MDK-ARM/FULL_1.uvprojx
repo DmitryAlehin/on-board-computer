@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F407xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;                             ../Drivers/STM32F4xx_HAL_Driver/Inc;                             ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;                             ../Middlewares/Third_Party/FatFs/src;                             ../Middlewares/Third_Party/FreeRTOS/Source/include;                             ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;                             ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;                             ../Drivers/CMSIS/Device/ST/STM32F4xx/Include;                             ../Drivers/CMSIS/Include;                             ..\EmWin;                             ..\EmWin\inc;                             ..\EmWin\src;                             ..\PeriphDrivers;                             ..\PeriphDrivers\inc;                             ..\PeriphDrivers\src</IncludePath>
+              <IncludePath>../Inc;                              ../Drivers/STM32F4xx_HAL_Driver/Inc;                              ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;                              ../Middlewares/Third_Party/FatFs/src;                              ../Middlewares/Third_Party/FreeRTOS/Source/include;                              ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;                              ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;                              ../Drivers/CMSIS/Device/ST/STM32F4xx/Include;                              ../Drivers/CMSIS/Include;                              ..\EmWin;                              ..\EmWin\inc;                              ..\EmWin\src;                              ..\PeriphDrivers;                              ..\PeriphDrivers\inc;                              ..\PeriphDrivers\src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -847,26 +847,6 @@
               <FilePath>..\PeriphDrivers\src\BK8000L.c</FilePath>
             </File>
             <File>
-              <FileName>MVH_08UB.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\PeriphDrivers\inc\MVH_08UB.h</FilePath>
-            </File>
-            <File>
-              <FileName>MVH_08UB.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\PeriphDrivers\src\MVH_08UB.c</FilePath>
-            </File>
-            <File>
-              <FileName>MCP41_42XXX.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\PeriphDrivers\inc\MCP41_42XXX.h</FilePath>
-            </File>
-            <File>
-              <FileName>MCP41_42XXX.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\PeriphDrivers\src\MCP41_42XXX.c</FilePath>
-            </File>
-            <File>
               <FileName>W25Q.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\PeriphDrivers\inc\W25Q.h</FilePath>
@@ -875,6 +855,31 @@
               <FileName>W25Q.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\PeriphDrivers\src\W25Q.c</FilePath>
+            </File>
+            <File>
+              <FileName>TDA7318.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\PeriphDrivers\inc\TDA7318.h</FilePath>
+            </File>
+            <File>
+              <FileName>TDA7318.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\PeriphDrivers\src\TDA7318.c</FilePath>
+            </File>
+            <File>
+              <FileName>RDA5807m.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\PeriphDrivers\inc\RDA5807m.h</FilePath>
+            </File>
+            <File>
+              <FileName>RDA5807m.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\PeriphDrivers\src\RDA5807m.c</FilePath>
+            </File>
+            <File>
+              <FileName>bmp280.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\PeriphDrivers\src\bmp280.c</FilePath>
             </File>
           </Files>
         </Group>

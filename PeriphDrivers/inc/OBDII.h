@@ -58,7 +58,7 @@ typedef struct
 
 typedef struct
 {	
-	float Voltage, ECT, FUEL, Fuel_consumption, K_MAP, LH_consumption;	
+	float Voltage, ECT, FUEL, Fuel_consumption, K_MAP, LH_consumption, FUEL_Liters;	
 }CarValues_Typedef;
 
 

@@ -1318,8 +1318,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\PeriphDrivers\inc\MVH_08UB.h</PathWithFileName>
-      <FilenameWithoutPath>MVH_08UB.h</FilenameWithoutPath>
+      <PathWithFileName>..\PeriphDrivers\inc\W25Q.h</PathWithFileName>
+      <FilenameWithoutPath>W25Q.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1330,8 +1330,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\PeriphDrivers\src\MVH_08UB.c</PathWithFileName>
-      <FilenameWithoutPath>MVH_08UB.c</FilenameWithoutPath>
+      <PathWithFileName>..\PeriphDrivers\src\W25Q.c</PathWithFileName>
+      <FilenameWithoutPath>W25Q.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1342,8 +1342,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\PeriphDrivers\inc\MCP41_42XXX.h</PathWithFileName>
-      <FilenameWithoutPath>MCP41_42XXX.h</FilenameWithoutPath>
+      <PathWithFileName>..\PeriphDrivers\inc\TDA7318.h</PathWithFileName>
+      <FilenameWithoutPath>TDA7318.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1354,8 +1354,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\PeriphDrivers\src\MCP41_42XXX.c</PathWithFileName>
-      <FilenameWithoutPath>MCP41_42XXX.c</FilenameWithoutPath>
+      <PathWithFileName>..\PeriphDrivers\src\TDA7318.c</PathWithFileName>
+      <FilenameWithoutPath>TDA7318.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1366,8 +1366,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\PeriphDrivers\inc\W25Q.h</PathWithFileName>
-      <FilenameWithoutPath>W25Q.h</FilenameWithoutPath>
+      <PathWithFileName>..\PeriphDrivers\inc\RDA5807m.h</PathWithFileName>
+      <FilenameWithoutPath>RDA5807m.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1378,8 +1378,20 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\PeriphDrivers\src\W25Q.c</PathWithFileName>
-      <FilenameWithoutPath>W25Q.c</FilenameWithoutPath>
+      <PathWithFileName>..\PeriphDrivers\src\RDA5807m.c</PathWithFileName>
+      <FilenameWithoutPath>RDA5807m.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>8</GroupNumber>
+      <FileNumber>79</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>1</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\PeriphDrivers\src\bmp280.c</PathWithFileName>
+      <FilenameWithoutPath>bmp280.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

@@ -61,16 +61,14 @@
 #include "DIALOG.h"
 #include "OBDII.h"
 #include "BK8000L.h"
-#include "MVH_08UB.h"
 #include "W25Q.h"
+#include "bmp280.h"
+#include "TDA7318.h"
+#include "RDA5807m.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-#define HIDE_FF 0
-#define DISPLAYSIZE 40// Amount of data to display by default
-#define STORESIZE 80 // Amount of data to store
-//GUI_PID_STATE PState;
 GUI_PID_STATE TS_State;
 WM_MESSAGE msg;
 
@@ -81,28 +79,14 @@ OBD_Data_States_Typedef OBD_Data_State = WAIT_DATA;
 BT_General_States_Typedef BT_General_State = WAIT_BT_INIT;
 BT_States_Typedef BT_State = WAIT;
 BT_Values_Typedef BT_Value;
-MVH_Values_Typedef MVH_Value;
-MVH_States_Typedef MVH_States = MVH_INIT_STATE;
 volatile uint8_t count;
 extern uint8_t DMA_BUFFER_OBD[DMA_BUFFER_OBD_SIZE];
 extern uint8_t OBD_BUFFER[DMA_BUFFER_OBD_SIZE];
 extern uint8_t DMA_BUFFER_BT[DMA_BUFFER_BT_SIZE];
 extern uint8_t BT_BUFFER[DMA_BUFFER_BT_SIZE];
-uint8_t MVH_BUFFER[STORESIZE];
 CarValues_Typedef Car_Param;
 Saved_parameters_Typedef Saved_Parameters;
-//extern RTC_TimeTypeDef time;
-//extern RTC_DateTypeDef date;
 extern GUIHandles GuiHandles;
-
-
-volatile uint8_t currentMOSI;
-uint8_t bitsFilled = 0;
-uint8_t overSized = 0; // Safety margin for memory allocation
-uint8_t mosi[STORESIZE];
-volatile uint16_t displayPosition = 0;
-volatile uint8_t mosiPrint[STORESIZE];
-volatile uint16_t oldDisplayPosition;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -124,49 +108,17 @@ xQueueHandle QueueBTFromISR;
 osThreadId GUIHandle;
 osThreadId ParserHandle;
 osThreadId OBDHandle;
+osThreadId AudioHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-void UART_printf(const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
 
-    char buffer[256];
-
-    vsnprintf(buffer, 256, format, args);
-
-    HAL_UART_Transmit(&huart3, buffer, strlen(buffer), HAL_MAX_DELAY);
-
-    va_end(args);
-}
-
-inline static void printOneChar(uint8_t character, uint8_t isMOSI) {
-#if (HIDE_FF == 1)
-	if (character == 0xff) {
-		UART_printf("  ");
-	} else {
-		UART_printf("%02x", character);
-	}
-#elif (HIDE_FF == 2)
-	if (character == 0xff) {
-		if (isMOSI) {
-			UART_printf("\e[34m%02x\e[33m", character);
-		} else {
-			UART_printf("\e[34m%02x\e[36m", character);
-		}
-	} else {
-		UART_printf("%02x", character);
-	}
-#else
-	UART_printf("%02x", character);
-#endif
-}
 /* USER CODE END FunctionPrototypes */
 
 void _GUI(void const * argument);
 void _Parser(void const * argument);
 void _OBD(void const * argument);
+void _Audio(void const * argument);
 
 extern void MX_FATFS_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -178,15 +130,10 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-   	Touch_Cal_Read(&matrix);
-	__HAL_RCC_CRC_CLK_ENABLE();
-	
-	
+  Touch_Cal_Read(&matrix);
+	__HAL_RCC_CRC_CLK_ENABLE();	
 	GUI_Init();
 	Car_Param.K_MAP = 60.0;
-	 
-	for (int i = 0; i < 8; i++) 
-	HAL_GPIO_EXTI_Callback(CLK_MVH_Pin);
 //	OBD_General_State = NOP;
   /* USER CODE END Init */
 
@@ -204,7 +151,7 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of GUI */
-  osThreadDef(GUI, _GUI, osPriorityNormal, 0, 4096);
+  osThreadDef(GUI, _GUI, osPriorityNormal, 0, 2048);
   GUIHandle = osThreadCreate(osThread(GUI), NULL);
 
   /* definition and creation of Parser */
@@ -215,13 +162,15 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(OBD, _OBD, osPriorityNormal, 0, 2048);
   OBDHandle = osThreadCreate(osThread(OBD), NULL);
 
+  /* definition and creation of Audio */
+  osThreadDef(Audio, _Audio, osPriorityNormal, 0, 512);
+  AudioHandle = osThreadCreate(osThread(Audio), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-//	QueueCarParam = xQueueCreate(1, sizeof(CarParam));
-	QueueMVHFromISR = xQueueCreate(1, sizeof(MVH_BUFFER));
 	QueueODBFromISR = xQueueCreate(1, sizeof(DMA_BUFFER_OBD));
 	QueueBTFromISR = xQueueCreate(1, sizeof(DMA_BUFFER_BT));
   /* add queues, ... */
@@ -264,10 +213,7 @@ void _GUI(void const * argument)
 				break;
 			case WM_UPDATE_BT:
 				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
-				break;
-			case WM_UPDATE_MVH:
-				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
-				break;			
+				break;				
 		}
 			
 		
@@ -313,77 +259,9 @@ void _OBD(void const * argument)
 {
   /* USER CODE BEGIN _OBD */
 	float VSS, MAP, IAT, RPM, LONGFT, SHRTFT, Fb, Ft;
-	uint32_t lastTime = HAL_GetTick();
-  uint32_t lastSeparatorTime = HAL_GetTick();
   /* Infinite loop */
   for(;;)
-  {
-//		if(uxQueueMessagesWaitingFromISR(QueueMVHFromISR)>0)
-//			{
-//				xQueueReceive(QueueMVHFromISR, &mosiuart, 100);							
-//				
-//				for (int i = 0; i < 40; i++) 
-//				{					
-//					printOneChar(mosiuart[i], 1);
-//					UART_printf(" ");
-//					if(mosiuart[i] == 0x03)
-//					{
-//						UART_printf("\r\n");
-//					}
-//				}				
-//			}
-//			}  
-		if (displayPosition >= DISPLAYSIZE || HAL_GetTick() - lastTime >= 100) {
-  		oldDisplayPosition = displayPosition; // Make sure it doesn't change
-  		// Copy the data so no one writes on it
-  		memcpy(mosiPrint, mosi, oldDisplayPosition);
-			MVH_CheckState(mosiPrint, &MVH_Value);
-  		if (displayPosition != oldDisplayPosition) {
-  			UART_printf("!!!COW\r\n"); // copy overwrite
-  		}
-
-  		displayPosition = 0; // Lose data instead of printing corrupt data
-  		
-
-//				if (oldDisplayPosition > 0) {
-//  			// Data exists
-////  			UART_printf("\e[33m");
-//				
-				for (int i = 0; i < oldDisplayPosition; i++) {
-					
-					printOneChar(mosiPrint[i], 1);
-					UART_printf(" ");
-					if(mosiPrint[i] == 0x03)
-					{
-						UART_printf("\r\n");
-					}
-				}
-//			}
-////				UART_printf("\e[39m\r\n\e[36m");
-//				
-////				UART_printf("\e[39m\r\n");
-//				
-//				lastSeparatorTime = HAL_GetTick();
-//  		}
-
-//  		if (HAL_GetTick() - lastTime >= 100){
-//  			if (oldDisplayPosition > 0) {
-//  				UART_printf("\r\n"); // Print a newline to separate old data
-//  			}
-//  			if (bitsFilled != 0) {
-//  				UART_printf("!!!IR\r\n");
-//  				bitsFilled = 0;
-//  			}
-//  		}  		
-//  		if (overSized) {
-//  			UART_printf("!!!OS\r\n");
-//  			overSized = 0;
-//  		}
-
-			lastTime = HAL_GetTick();
-////				
-			}
-		
+  {		
 		OBD_Init();
 		BT_Init();
 		if(OBD_General_State == OBD_INIT)
@@ -395,8 +273,9 @@ void _OBD(void const * argument)
 			Car_Param.Voltage = CarParameters.Voltage;
 			Car_Param.ECT = CarParameters.ECT - 40.0;
 			Car_Param.FUEL = ((CarParameters.FUEL) * 100.0) / 255.0;
+			Car_Param.FUEL_Liters = Car_Param.FUEL / 100.0 * 55.0;
 			VSS = CarParameters.VSS;
-			if(VSS == 0)
+			if(VSS <= 0)
 			{
 				VSS = 1;
 			}
@@ -418,57 +297,29 @@ void _OBD(void const * argument)
   /* USER CODE END _OBD */
 }
 
+/* USER CODE BEGIN Header__Audio */
+/**
+* @brief Function implementing the Audio thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header__Audio */
+void _Audio(void const * argument)
+{
+  /* USER CODE BEGIN _Audio */
+  /* Infinite loop */
+  for(;;)
+  {
+    BT_Init();
+  }
+  /* USER CODE END _Audio */
+}
+
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
 {	
 	msg.MsgId = WM_UPDATE_MIN;	
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-//	uint32_t lastTime = HAL_GetTick();
-//  uint32_t lastSeparatorTime = HAL_GetTick();
-//	uint8_t mosiPrint[STORESIZE];
-	static BaseType_t xHigherPriorityTaskWoken;
-	if (GPIO_Pin == CLK_MVH_Pin) {		
-		// CLK asserted		
-		currentMOSI = ((currentMOSI << 1) & 0xff) | HAL_GPIO_ReadPin(MOSI_MVH_GPIO_Port, MOSI_MVH_Pin);
-		if (++bitsFilled == 8) {
-			// An entire byte has been filled. Push it back on the display arrays
-			mosi[displayPosition] = currentMOSI;
-			displayPosition++;
-			bitsFilled = 0;
-//			printOneChar(mosi[0], 1);
-//			UART_printf(" ");
-//			mosi[0] = 0;
-			
-//			if (displayPosition >= DISPLAYSIZE || HAL_GetTick() - lastTime >= 100) {
-//  		uint16_t oldDisplayPosition = displayPosition; // Make sure it doesn't change
-//  		// Copy the data so no one writes on it
-//  		memcpy(mosiPrint, mosi, oldDisplayPosition);
-//				displayPosition = 0;
-//			xHigherPriorityTaskWoken = pdFALSE;	
-//if (oldDisplayPosition > 0) {				
-//			xQueueSendFromISR(QueueMVHFromISR, &mosiPrint, &xHigherPriorityTaskWoken);
-//}
-//		}		
-	}	
-if (displayPosition >= STORESIZE) {
-				// Back to the beginning
-//				for (int i = 0; i < displayPosition; i++) {
-//					printOneChar(mosi[i], 1);
-//					UART_printf(" ");
-//				}
-//				memcpy(MVH_BUFFER, mosi, displayPosition);
-//				xHigherPriorityTaskWoken = pdFALSE;
-//				xQueueSendFromISR(QueueMVHFromISR, &MVH_BUFFER, &xHigherPriorityTaskWoken);				
-				displayPosition = 0;
-				overSized = 1;
-			}		
-	} else {
-		
-//		Error_Handler();
-	}
 }
 /* USER CODE END Application */
 

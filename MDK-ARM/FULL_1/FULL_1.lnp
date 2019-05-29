@@ -69,9 +69,10 @@
 "full_1\touchpanel.o"
 "full_1\obdii.o"
 "full_1\bk8000l.o"
-"full_1\mvh_08ub.o"
-"full_1\mcp41_42xxx.o"
 "full_1\w25q.o"
+"full_1\tda7318.o"
+"full_1\rda5807m.o"
+"full_1\bmp280.o"
 --library_type=microlib --strict --scatter "FULL_1\FULL_1.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

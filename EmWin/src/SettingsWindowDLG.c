@@ -124,7 +124,6 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 	SLIDER_SKINFLEX_PROPS  Slider_Props;
 	SPINBOX_SKINFLEX_PROPS Spinbox_Props;
 	CHECKBOX_SKINFLEX_PROPS Checkbox_Props;
-	int retCode;
   // USER END
 
   switch (pMsg->MsgId) {
