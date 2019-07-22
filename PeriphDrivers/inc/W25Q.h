@@ -36,8 +36,16 @@ typedef struct
 	uint8_t Debug_mode;
 	uint8_t Consumption_mode;
 	uint8_t K;
+	uint8_t Volume;
 	uint32_t key;
 	float Average_consumption;
+	int8_t FL;
+	int8_t FR;
+	int8_t RL;
+	int8_t RR;
+	int8_t Bass;
+	int8_t Treble;
+	int8_t Amplification;
 }Saved_parameters_Typedef;
 
 void W25Q_ChipErase(void);

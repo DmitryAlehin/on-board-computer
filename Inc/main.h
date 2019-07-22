@@ -91,6 +91,12 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define BT_EN_Pin GPIO_PIN_2
 #define BT_EN_GPIO_Port GPIOE
+#define OBDII_EN_Pin GPIO_PIN_3
+#define OBDII_EN_GPIO_Port GPIOE
+#define RADIO_EN_Pin GPIO_PIN_4 //6
+#define RADIO_EN_GPIO_Port GPIOE
+#define TDA7813_EN_Pin GPIO_PIN_6 //4
+#define TDA7813_EN_GPIO_Port GPIOE
 #define SDIO_EN_Pin GPIO_PIN_4
 #define SDIO_EN_GPIO_Port GPIOC
 #define T_IRQ_Pin GPIO_PIN_5

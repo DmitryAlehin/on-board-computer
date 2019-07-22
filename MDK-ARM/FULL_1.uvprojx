@@ -312,7 +312,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>4</Optim>
+            <Optim>1</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F407xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;                              ../Drivers/STM32F4xx_HAL_Driver/Inc;                              ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;                              ../Middlewares/Third_Party/FatFs/src;                              ../Middlewares/Third_Party/FreeRTOS/Source/include;                              ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;                              ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;                              ../Drivers/CMSIS/Device/ST/STM32F4xx/Include;                              ../Drivers/CMSIS/Include;                              ..\EmWin;                              ..\EmWin\inc;                              ..\EmWin\src;                              ..\PeriphDrivers;                              ..\PeriphDrivers\inc;                              ..\PeriphDrivers\src</IncludePath>
+              <IncludePath>../Inc;                               ../Drivers/STM32F4xx_HAL_Driver/Inc;                               ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;                               ../Middlewares/Third_Party/FatFs/src;                               ../Middlewares/Third_Party/FreeRTOS/Source/include;                               ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;                               ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;                               ../Drivers/CMSIS/Device/ST/STM32F4xx/Include;                               ../Drivers/CMSIS/Include;                               ..\EmWin;                               ..\EmWin\inc;                               ..\EmWin\src;                               ..\PeriphDrivers;                               ..\PeriphDrivers\inc;                               ..\PeriphDrivers\src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -607,6 +607,11 @@
               <FileType>1</FileType>
               <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f4xx_hal_exti.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -666,6 +671,11 @@
               <FileName>queue.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/queue.c</FilePath>
+            </File>
+            <File>
+              <FileName>stream_buffer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c</FilePath>
             </File>
             <File>
               <FileName>tasks.c</FileName>
@@ -810,6 +820,11 @@
               <FileName>SettingsWindowDLG.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\EmWin\src\SettingsWindowDLG.c</FilePath>
+            </File>
+            <File>
+              <FileName>EqualizerWindowDLG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EmWin\src\EqualizerWindowDLG.c</FilePath>
             </File>
           </Files>
         </Group>

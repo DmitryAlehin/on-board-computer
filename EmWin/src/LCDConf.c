@@ -245,7 +245,7 @@ int LCD_X_DisplayDriver(unsigned LayerIndex, unsigned Cmd, void * pData) {
   switch (Cmd) {
   case LCD_X_INITCONTROLLER: 
 		{
-  
+			delay_time(10);
 			LcdWriteReg(0x00E2);	//PLL multiplier, set PLL clock to 120M
 			LcdWriteData(0x0023);	    //N=0x36 for 6.5M, 0x23 for 10M crystal
 			LcdWriteData(0x0002);

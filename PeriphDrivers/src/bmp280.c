@@ -1,31 +1,3 @@
-/**
- * Ciastkolog.pl (https://github.com/ciastkolog)
- * 
-*/
-/**
- * The MIT License (MIT)
- *
- * Copyright (c) 2016 sheinz (https://github.com/sheinz)
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
 #include "bmp280.h"
 
 /**
@@ -81,14 +53,6 @@
 #define    BMP280_STANDBY_2000     6    /* stand by time 2s BMP280, 10ms BME280 */
 #define    BMP280_STANDBY_4000     7    /* stand by time 4s BMP280, 20ms BME280 */
 
-//Функция принимает ссылку на структуру, и заносит в нее начальные значения конфигурации датчика
-void bmp280_init_default_params(bmp280_params_t *params) {
-	params->mode = BMP280_MODE_NORMAL;
-	params->filter = BMP280_FILTER_OFF;
-	params->oversampling_pressure = BMP280_STANDARD;
-	params->oversampling_temperature = BMP280_STANDARD;
-	params->standby = BMP280_STANDBY_250;
-}
 //функция чтения 16-битного регистра
 static bool read_register16(BMP280_HandleTypedef *dev, uint8_t addr, uint16_t *value) {
 	uint16_t tx_buff;
@@ -152,7 +116,7 @@ static int write_register8(BMP280_HandleTypedef *dev, uint8_t addr, uint8_t valu
 		return true;
 }
 //функция инициализации датчика
-bool bmp280_init(BMP280_HandleTypedef *dev, bmp280_params_t *params) {
+bool bmp280_init(BMP280_HandleTypedef *dev) {
 
 	if (dev->addr != BMP280_I2C_ADDRESS_0
 			&& dev->addr != BMP280_I2C_ADDRESS_1) {
@@ -160,16 +124,11 @@ bool bmp280_init(BMP280_HandleTypedef *dev, bmp280_params_t *params) {
 		return false;
 	}
 
-	
-	
-
-	// Soft reset.
 	//мягкая перезагрузка
 	if (write_register8(dev, BMP280_REG_RESET, BMP280_RESET_VALUE)) {
 		return false;
 	}
 
-	// Wait until finished copying over the NVP data.
 	//ожидание копирования данных NVP
 	while (1) {
 		uint8_t status;
@@ -177,6 +136,7 @@ bool bmp280_init(BMP280_HandleTypedef *dev, bmp280_params_t *params) {
 				&& (status & 1) == 0)
 			break;
 	}
+	
 	//чтение калибровочных коэффициентов
 	if (!read_calibration_data(dev)) {
 		return false;
@@ -184,17 +144,13 @@ bool bmp280_init(BMP280_HandleTypedef *dev, bmp280_params_t *params) {
 
 	
 	//использование фильтра
-	uint8_t config = (params->standby << 5) | (params->filter << 2);
+	uint8_t config = (BMP280_STANDBY_05 << 5) | (BMP280_FILTER_OFF << 2);
 	if (write_register8(dev, BMP280_REG_CONFIG, config)) {
 		return false;
 	}
 
-	if (params->mode == BMP280_MODE_FORCED) {
-		params->mode = BMP280_MODE_SLEEP;  // initial mode for forced is sleep
-	}
-
-	uint8_t ctrl = (params->oversampling_temperature << 5)
-			| (params->oversampling_pressure << 2) | (params->mode);
+	uint8_t ctrl = (BMP280_STANDARD << 5)
+			| (BMP280_STANDARD << 2) | (BMP280_MODE_NORMAL);
 
 	
 
@@ -204,6 +160,7 @@ bool bmp280_init(BMP280_HandleTypedef *dev, bmp280_params_t *params) {
 
 	return true;
 }
+
 //функция получения данных в режиме forced
 bool bmp280_force_measurement(BMP280_HandleTypedef *dev) {
 	uint8_t ctrl;
@@ -216,6 +173,7 @@ bool bmp280_force_measurement(BMP280_HandleTypedef *dev) {
 	}
 	return true;
 }
+
 //функция проверки занятости датчика
 bool bmp280_is_measuring(BMP280_HandleTypedef *dev) {
 	uint8_t status;
@@ -227,11 +185,7 @@ bool bmp280_is_measuring(BMP280_HandleTypedef *dev) {
 	return false;
 }
 
-/**
- * Compensation algorithm is taken from BMP280 datasheet.
- *
- * Return value is in degrees Celsius.
- */
+
 //функция компенсанции температуры с помощью калибровочных коэффициентов
 static inline int32_t compensate_temperature(BMP280_HandleTypedef *dev, int32_t adc_temp,
 		int32_t *fine_temp) {
@@ -247,11 +201,7 @@ static inline int32_t compensate_temperature(BMP280_HandleTypedef *dev, int32_t 
 	return (*fine_temp * 5 + 128) >> 8;
 }
 
-/**
- * Compensation algorithm is taken from BMP280 datasheet.
- *
- * Return value is in Pa, 24 integer bits and 8 fractional bits.
- */
+
 //функция компенсанции давления с помощью калибровочных коэффициентов
 static inline uint32_t compensate_pressure(BMP280_HandleTypedef *dev, int32_t adc_press,
 		int32_t fine_temp) {
@@ -266,7 +216,7 @@ static inline uint32_t compensate_pressure(BMP280_HandleTypedef *dev, int32_t ad
 	var1 = (((int64_t) 1 << 47) + var1) * ((int64_t) dev->dig_P1) >> 33;
 
 	if (var1 == 0) {
-		return 0;  // avoid exception caused by division by zero
+		return 0; 
 	}
 
 	p = 1048576 - adc_press;
@@ -278,11 +228,7 @@ static inline uint32_t compensate_pressure(BMP280_HandleTypedef *dev, int32_t ad
 	return p;
 }
 
-/**
- * Compensation algorithm is taken from BME280 datasheet.
- *
- * Return value is in Pa, 24 integer bits and 8 fractional bits.
- */
+
 //функция получения целочисленных данных с датчика
 bool bmp280_read_fixed(BMP280_HandleTypedef *dev, int32_t *temperature, uint32_t *pressure) {
 	int32_t adc_pressure;
@@ -305,6 +251,7 @@ bool bmp280_read_fixed(BMP280_HandleTypedef *dev, int32_t *temperature, uint32_t
 
 	return true;
 }
+
 //функция получения данных в формате числа с плавающей точкой
 bool bmp280_read_float(BMP280_HandleTypedef *dev, float *temperature, float *pressure) {
 	int32_t fixed_temperature;

@@ -87,7 +87,8 @@ Purpose     : Dialog box include
 #include "OBDII.h"
 #include "BK8000L.h"
 #include "W25Q.h"
-
+#include "TDA7318.h"
+#include "bmp280.h"
 extern RTC_HandleTypeDef hrtc;
 extern CarValues_Typedef Car_Param;
 extern CarParameters_Typedef CarParameters;
@@ -113,6 +114,12 @@ int       WINDOW_SetUserData      (WM_HWIN hObj, const void * pSrc, int NumBytes
 
 void WINDOW_Callback(WM_MESSAGE * pMsg);
 
+WM_HWIN CreateMainWindow(void);
+WM_HWIN CreateAudioWindow(void);
+WM_HWIN CreateOBDWindow(void);
+WM_HWIN CreateSettingsWindow(void);
+WM_HWIN CreateEqualizerWindow(void);
+
 typedef struct
 {
 	WM_HWIN hMainWindow;
@@ -121,6 +128,7 @@ typedef struct
 	WM_HWIN hSettingsWindow;
 	WM_HWIN hAboutWindow;
 	WM_HWIN hNumpadWindow;
+	WM_HWIN hEqualizerWindow;
 }GUIHandles;
 
 

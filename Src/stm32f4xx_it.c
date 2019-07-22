@@ -198,7 +198,17 @@ void DebugMon_Handler(void)
 void RTC_WKUP_IRQHandler(void)
 {
   /* USER CODE BEGIN RTC_WKUP_IRQn 0 */
-
+	/* Check for RTC interrupt */
+	if (__HAL_RTC_WAKEUPTIMER_GET_IT(&hrtc, RTC_IT_WUT) != RESET) {
+		/* Call user function */
+		RTC_WakeupCallback();
+		
+		/* Clear interrupt flags */
+		__HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&hrtc, RTC_FLAG_WUTF);
+	}
+	
+	/* Clear EXTI line 22 bit */
+	__HAL_RTC_WAKEUPTIMER_EXTI_CLEAR_FLAG();
   /* USER CODE END RTC_WKUP_IRQn 0 */
   HAL_RTCEx_WakeUpTimerIRQHandler(&hrtc);
   /* USER CODE BEGIN RTC_WKUP_IRQn 1 */
@@ -255,7 +265,7 @@ void DMA1_Stream5_IRQHandler(void)
 		}
 }
   /* USER CODE END DMA1_Stream5_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_usart2_rx);
+//  HAL_DMA_IRQHandler(&hdma_usart2_rx);
   /* USER CODE BEGIN DMA1_Stream5_IRQn 1 */
 
   /* USER CODE END DMA1_Stream5_IRQn 1 */
@@ -292,30 +302,30 @@ void TIM1_UP_TIM10_IRQHandler(void)
 /**
   * @brief This function handles I2C1 event interrupt.
   */
-void I2C1_EV_IRQHandler(void)
-{
-  /* USER CODE BEGIN I2C1_EV_IRQn 0 */
+//void I2C1_EV_IRQHandler(void)
+//{
+//  /* USER CODE BEGIN I2C1_EV_IRQn 0 */
 
-  /* USER CODE END I2C1_EV_IRQn 0 */
-  HAL_I2C_EV_IRQHandler(&hi2c1);
-  /* USER CODE BEGIN I2C1_EV_IRQn 1 */
+//  /* USER CODE END I2C1_EV_IRQn 0 */
+//  HAL_I2C_EV_IRQHandler(&hi2c1);
+//  /* USER CODE BEGIN I2C1_EV_IRQn 1 */
 
-  /* USER CODE END I2C1_EV_IRQn 1 */
-}
+//  /* USER CODE END I2C1_EV_IRQn 1 */
+//}
 
-/**
-  * @brief This function handles I2C1 error interrupt.
-  */
-void I2C1_ER_IRQHandler(void)
-{
-  /* USER CODE BEGIN I2C1_ER_IRQn 0 */
+///**
+//  * @brief This function handles I2C1 error interrupt.
+//  */
+//void I2C1_ER_IRQHandler(void)
+//{
+//  /* USER CODE BEGIN I2C1_ER_IRQn 0 */
 
-  /* USER CODE END I2C1_ER_IRQn 0 */
-  HAL_I2C_ER_IRQHandler(&hi2c1);
-  /* USER CODE BEGIN I2C1_ER_IRQn 1 */
+//  /* USER CODE END I2C1_ER_IRQn 0 */
+//  HAL_I2C_ER_IRQHandler(&hi2c1);
+//  /* USER CODE BEGIN I2C1_ER_IRQn 1 */
 
-  /* USER CODE END I2C1_ER_IRQn 1 */
-}
+//  /* USER CODE END I2C1_ER_IRQn 1 */
+//}
 
 /**
   * @brief This function handles USART1 global interrupt.
@@ -331,7 +341,7 @@ void USART1_IRQHandler(void)
 		hdma_usart1_rx.Instance->CR &= ~DMA_SxCR_EN;       /* Disabling DMA will force transfer complete interrupt if enabled */       
 	}
   /* USER CODE END USART1_IRQn 0 */
-  HAL_UART_IRQHandler(&huart1);
+//  HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
@@ -351,7 +361,7 @@ void USART2_IRQHandler(void)
 		hdma_usart2_rx.Instance->CR &= ~DMA_SxCR_EN;       /* Disabling DMA will force transfer complete interrupt if enabled */       
 	}
   /* USER CODE END USART2_IRQn 0 */
-  HAL_UART_IRQHandler(&huart2);
+//  HAL_UART_IRQHandler(&huart2);
   /* USER CODE BEGIN USART2_IRQn 1 */
 
   /* USER CODE END USART2_IRQn 1 */
@@ -409,7 +419,7 @@ void DMA2_Stream2_IRQHandler(void)
 		}
 }
   /* USER CODE END DMA2_Stream2_IRQn 0 */
-  HAL_DMA_IRQHandler(&hdma_usart1_rx);
+//  HAL_DMA_IRQHandler(&hdma_usart1_rx);
   /* USER CODE BEGIN DMA2_Stream2_IRQn 1 */
 
   /* USER CODE END DMA2_Stream2_IRQn 1 */

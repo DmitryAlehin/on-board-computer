@@ -77,8 +77,12 @@ CarParameters_Typedef CarParameters;
 OBD_Sign_States_Typedef OBD_Sign_State = OBD_OK;
 OBD_Data_States_Typedef OBD_Data_State = WAIT_DATA;
 BT_General_States_Typedef BT_General_State = WAIT_BT_INIT;
+TDA7318_States_Typedef TDA7318_General_State = TDA7318_WAIT_INIT;
+TDA7318_Volume_States_Typedef TDA7318_Volume_State = TDA7318_UNMUTE;
 BT_States_Typedef BT_State = WAIT;
 BT_Values_Typedef BT_Value;
+BT_PowerMode_Typedef BT_PowerMode = OFF;
+uint8_t Volume;
 volatile uint8_t count;
 extern uint8_t DMA_BUFFER_OBD[DMA_BUFFER_OBD_SIZE];
 extern uint8_t OBD_BUFFER[DMA_BUFFER_OBD_SIZE];
@@ -87,6 +91,11 @@ extern uint8_t BT_BUFFER[DMA_BUFFER_BT_SIZE];
 CarValues_Typedef Car_Param;
 Saved_parameters_Typedef Saved_Parameters;
 extern GUIHandles GuiHandles;
+BMP280_HandleTypedef BMP280;
+TnP Temp_Pres;
+//bmp280_params_t BMP280_param;
+volatile uint8_t buf[50];
+uint8_t k = 0;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -123,6 +132,22 @@ void _Audio(void const * argument);
 extern void MX_FATFS_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
+/* GetIdleTaskMemory prototype (linked to static allocation support) */
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize );
+
+/* USER CODE BEGIN GET_IDLE_TASK_MEMORY */
+static StaticTask_t xIdleTaskTCBBuffer;
+static StackType_t xIdleStack[configMINIMAL_STACK_SIZE];
+  
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize )
+{
+  *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
+  *ppxIdleTaskStackBuffer = &xIdleStack[0];
+  *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+  /* place for user code */
+}                   
+/* USER CODE END GET_IDLE_TASK_MEMORY */
+
 /**
   * @brief  FreeRTOS initialization
   * @param  None
@@ -131,10 +156,18 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
   Touch_Cal_Read(&matrix);
-	__HAL_RCC_CRC_CLK_ENABLE();	
-	GUI_Init();
-	Car_Param.K_MAP = 60.0;
+	__HAL_RCC_CRC_CLK_ENABLE();
+//	BMP280.addr = BMP280_I2C_ADDRESS_0;
+//	bmp280_init_default_params(&BMP280_param);
+//	HAL_GPIO_WritePin(RADIO_EN_GPIO_Port, RADIO_EN_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(TDA7813_EN_GPIO_Port, TDA7813_EN_Pin, GPIO_PIN_SET);
+	
+	BMP280.addr = BMP280_I2C_ADDRESS_0;	
+	bmp280_init(&BMP280);	
+	Car_Param.K_MAP = 60.0;	
 //	OBD_General_State = NOP;
+	
+	
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -149,6 +182,12 @@ void MX_FREERTOS_Init(void) {
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
+  /* USER CODE BEGIN RTOS_QUEUES */
+	QueueODBFromISR = xQueueCreate(1, sizeof(DMA_BUFFER_OBD));
+	QueueBTFromISR = xQueueCreate(1, sizeof(DMA_BUFFER_BT));
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
   /* Create the thread(s) */
   /* definition and creation of GUI */
   osThreadDef(GUI, _GUI, osPriorityNormal, 0, 2048);
@@ -162,7 +201,7 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(OBD, _OBD, osPriorityNormal, 0, 2048);
   OBDHandle = osThreadCreate(osThread(OBD), NULL);
 
-  /* definition and creation of Audio */
+  /* definition and creation of Audio */ 
   osThreadDef(Audio, _Audio, osPriorityNormal, 0, 512);
   AudioHandle = osThreadCreate(osThread(Audio), NULL);
 
@@ -170,11 +209,6 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
-  /* USER CODE BEGIN RTOS_QUEUES */
-	QueueODBFromISR = xQueueCreate(1, sizeof(DMA_BUFFER_OBD));
-	QueueBTFromISR = xQueueCreate(1, sizeof(DMA_BUFFER_BT));
-  /* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
 }
 
 /* USER CODE BEGIN Header__GUI */
@@ -191,13 +225,16 @@ void _GUI(void const * argument)
 
   /* USER CODE BEGIN _GUI */
 //	OBD_Init();
+	GUI_Init();
 	CreateMainWindow();
+//	LCD_Clear(GUI_RED);
 //	CreateWindow();
   /* Infinite loop */
   for(;;)
   {
     Touch_Update();
-		GUI_Exec();
+		GUI_Exec();	
+		
 		switch(msg.MsgId)
 		{
 			case WM_UPDATE_MIN:
@@ -211,11 +248,20 @@ void _GUI(void const * argument)
 				msg.MsgId = WM_UPDATE_CAR;				
 				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
 				break;
+			case WM_UPDATE_AUDIO:
+				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
+				break;
 			case WM_UPDATE_BT:
 				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
-				break;				
+				break;
+			case WM_UPDATE_BT_POWERMODE:
+				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
+				break;
+			case WM_UPDATE_METEO:
+				WM_SendMessage(GuiHandles.hMainWindow, &msg);
+				break;
 		}
-			
+		
 		
   }
   /* USER CODE END _GUI */
@@ -242,7 +288,10 @@ void _Parser(void const * argument)
 		if(uxQueueMessagesWaitingFromISR(QueueBTFromISR)>0)
 			{
 				xQueueReceive(QueueBTFromISR, &BT_BUFFER, 100);
-				BTCheckState(BT_BUFFER, &BT_Value);			
+				if(BT_PowerMode != OFF)
+				{
+					BTCheckState(BT_BUFFER, &BT_Value);	
+				}					
 			}    		
   }
   /* USER CODE END _Parser */
@@ -262,8 +311,8 @@ void _OBD(void const * argument)
   /* Infinite loop */
   for(;;)
   {		
-		OBD_Init();
-		BT_Init();
+		BT_Init();		
+		OBD_Init();		
 		if(OBD_General_State == OBD_INIT)
 		{	
 			OBD_Update();
@@ -307,19 +356,49 @@ void _OBD(void const * argument)
 void _Audio(void const * argument)
 {
   /* USER CODE BEGIN _Audio */
+	float Temperature, Pressure;
+	
   /* Infinite loop */
   for(;;)
-  {
-    BT_Init();
+  {	
+//		if(BT_General_State == BT_ON)
+//		{
+			
+//		}
+		if(Saved_Parameters.Temperature_mode)
+		{				
+		bmp280_read_float(&BMP280, &Temperature, &Pressure);
+		Temp_Pres.Temperature = Temperature;
+		Temp_Pres.Pressure = Pressure;
+		msg.MsgId = WM_UPDATE_METEO;
+		}
+		osDelay(5000);
+//			for(uint8_t i = 0; i<128; i++)
+//		{
+//			if(HAL_I2C_IsDeviceReady(&hi2c1, i, 10, 100) == HAL_OK)
+//			{
+//				buf[k] = i;
+//				k++;
+//			}
+//			if(i == 127)
+//			{
+//				buf[4] = 1;
+//			}
+//		}
   }
   /* USER CODE END _Audio */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
-{	
-	msg.MsgId = WM_UPDATE_MIN;	
+//void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
+//{	
+//	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
+//	msg.MsgId = WM_UPDATE_MIN;	
+//}
+
+void RTC_WakeupCallback(void) {		
+	msg.MsgId = WM_UPDATE_MIN;
 }
 /* USER CODE END Application */
 

@@ -132,17 +132,17 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     // Initialization of 'SettingsWindow'
 //		HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
 //		HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
-		SLIDER_GetSkinFlexProps(&Slider_Props, SLIDER_SKINFLEX_PI_PRESSED);
-		Slider_Props.aColorFrame[0] = GUI_BLUE_COLOR;
-		Slider_Props.aColorFrame[1] = GUI_BLUE_COLOR;
-		Slider_Props.ColorFocus = GUI_GRAY_COLOR;
-		Slider_Props.ColorTick = GUI_BLUE_COLOR;
-		Slider_Props.aColorInner[0] = GUI_BLUE_COLOR;
-		Slider_Props.aColorInner[1] = GUI_BLUE_COLOR;
-		Slider_Props.aColorShaft[0] = GUI_BLUE_COLOR;
-		Slider_Props.aColorShaft[1] = GUI_BLUE_COLOR;
-		SLIDER_SetSkinFlexProps(&Slider_Props, SLIDER_SKINFLEX_PI_PRESSED);
-		SLIDER_SetSkinFlexProps(&Slider_Props, SLIDER_SKINFLEX_PI_UNPRESSED);
+//		SLIDER_GetSkinFlexProps(&Slider_Props, SLIDER_SKINFLEX_PI_PRESSED);
+//		Slider_Props.aColorFrame[0] = GUI_BLUE_COLOR;
+//		Slider_Props.aColorFrame[1] = GUI_BLUE_COLOR;
+//		Slider_Props.ColorFocus = GUI_GRAY_COLOR;
+//		Slider_Props.ColorTick = GUI_BLUE_COLOR;
+//		Slider_Props.aColorInner[0] = GUI_BLUE_COLOR;
+//		Slider_Props.aColorInner[1] = GUI_BLUE_COLOR;
+//		Slider_Props.aColorShaft[0] = GUI_BLUE_COLOR;
+//		Slider_Props.aColorShaft[1] = GUI_BLUE_COLOR;
+//		SLIDER_SetSkinFlexProps(&Slider_Props, SLIDER_SKINFLEX_PI_PRESSED);
+//		SLIDER_SetSkinFlexProps(&Slider_Props, SLIDER_SKINFLEX_PI_UNPRESSED);
 		SPINBOX_GetSkinFlexProps(&Spinbox_Props, SPINBOX_SKINFLEX_PI_ENABLED);
 		Spinbox_Props.ColorBk = GUI_GRAY_COLOR;
 		Spinbox_Props.aColorFrame[0] = GUI_BLUE_COLOR;
@@ -430,7 +430,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-				hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_0);				
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_2);				
 				Saved_Parameters.Consumption_mode = CHECKBOX_GetState(hItem);
         // USER END
         break;
@@ -451,7 +451,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-				hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_0);				
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_3);				
 				Saved_Parameters.Debug_mode = CHECKBOX_GetState(hItem);
         // USER END
         break;
@@ -700,7 +700,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 *
 *       CreateSettingsWindow
 */
-WM_HWIN CreateSettingsWindow(void);
+
 WM_HWIN CreateSettingsWindow(void) {
   WM_HWIN hWin;
   hWin = GUI_CreateDialogBox(_aDialogCreate, GUI_COUNTOF(_aDialogCreate), _cbDialog, WM_HBKWIN, 0, 0);

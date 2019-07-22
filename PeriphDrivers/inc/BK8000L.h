@@ -14,7 +14,6 @@ typedef enum
 	BT_PIN_RECEIVED,
 	BT_INIT_OK,
 	BT_CHECK_POWER,
-	BT_OFF
 }BT_General_States_Typedef;
 
 typedef enum 
@@ -25,6 +24,12 @@ typedef enum
 	BT_PAUSE,
 	BT_PLAY,
 }BT_States_Typedef;
+
+typedef enum 
+{
+	ON = 0,
+	OFF
+}BT_PowerMode_Typedef;
 
 typedef struct
 {	

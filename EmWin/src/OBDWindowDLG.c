@@ -231,7 +231,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 *
 *       CreateOBDWindow
 */
-WM_HWIN CreateOBDWindow(void);
+
 WM_HWIN CreateOBDWindow(void) {
   WM_HWIN hWin;
 

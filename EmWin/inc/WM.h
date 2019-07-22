@@ -292,8 +292,10 @@ typedef struct {
 
 #define WM_UPDATE_MIN               0x0401  /* Update mitutes */
 #define WM_UPDATE_CAR               0x0402  /* Update car parameters*/
-#define WM_UPDATE_BT                0x0403  /* Update Bluetooth states*/
-#define WM_UPDATE_MVH               0x0404  /* Update MVH-08UB states*/
+#define WM_UPDATE_AUDIO             0x0403  /* Update TDA7318 states*/
+#define WM_UPDATE_BT             		0x0404	/* Update bluetooth states*/
+#define WM_UPDATE_BT_POWERMODE      0x0405	/* Update bluetooth power mode states*/
+#define WM_UPDATE_METEO             0x0406
 /*********************************************************************
 *
 *       Motion messages

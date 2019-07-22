@@ -45,6 +45,7 @@
 RTC_TimeTypeDef time;
 RTC_DateTypeDef date;
 GUIHandles GuiHandles;
+extern TnP Temp_Pres;
 // USER END
 
 /*********************************************************************
@@ -98,6 +99,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 	uint8_t Data[20];
 	int retCode;
 	BUTTON_SKINFLEX_PROPS    	Props;
+	SLIDER_SKINFLEX_PROPS  Slider_Props;
 	BUTTON_SetDefaultFont(GUI_FONT_32B_1);
 	BUTTON_SetDefaultTextColor(GUI_BLUE_COLOR,BUTTON_SKINFLEX_PI_ENABLED);
 	BUTTON_SetDefaultTextColor(GUI_BLUE_COLOR,BUTTON_SKINFLEX_PI_FOCUSSED);
@@ -122,6 +124,18 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		Props.aColorFrame[0] = GUI_BLUE_COLOR;
 		Props.aColorFrame[1] = GUI_BLUE_COLOR;		
 		BUTTON_SetSkinFlexProps(&Props, BUTTON_SKINFLEX_PI_ENABLED);
+		
+		SLIDER_GetSkinFlexProps(&Slider_Props, SLIDER_SKINFLEX_PI_PRESSED);
+		Slider_Props.aColorFrame[0] = GUI_BLUE_COLOR;
+		Slider_Props.aColorFrame[1] = GUI_BLUE_COLOR;
+		Slider_Props.ColorFocus = GUI_GRAY_COLOR;
+		Slider_Props.ColorTick = GUI_BLUE_COLOR;
+		Slider_Props.aColorInner[0] = GUI_BLUE_COLOR;
+		Slider_Props.aColorInner[1] = GUI_BLUE_COLOR;
+		Slider_Props.aColorShaft[0] = GUI_BLUE_COLOR;
+		Slider_Props.aColorShaft[1] = GUI_BLUE_COLOR;
+		SLIDER_SetSkinFlexProps(&Slider_Props, SLIDER_SKINFLEX_PI_PRESSED);
+		SLIDER_SetSkinFlexProps(&Slider_Props, SLIDER_SKINFLEX_PI_UNPRESSED);
 		
     //
     hItem = pMsg->hWin;
@@ -169,6 +183,21 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		if(Saved_Parameters.Temperature_mode)
 		{
 			//вывод температуры
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
+			if((Temp_Pres.Temperature >22.0) &&(Temp_Pres.Temperature <24.0))
+			{
+				TEXT_SetTextColor(hItem, GUI_DARKGREEN);
+			}
+			if(Temp_Pres.Temperature >24.0)
+			{
+				TEXT_SetTextColor(hItem, GUI_RED_COLOR);
+			}
+			if(Temp_Pres.Temperature <22.0)
+			{
+				TEXT_SetTextColor(hItem, GUI_BLUE);
+			}
+			sprintf((char *)Data, "%.1f C, %.1f Pa", Temp_Pres.Temperature, Temp_Pres.Pressure);
+			TEXT_SetText(hItem, (char *)Data);			
 		}
 		else
 		{
@@ -236,6 +265,12 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 			sprintf((char *)Data, "%.1f V", Car_Param.Voltage);
 			TEXT_SetText(hItem, (char *)Data);
 			pMsg->MsgId = 0;
+			break;
+		case WM_UPDATE_METEO:
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
+				sprintf((char *)Data, "%.1f C, %.1f Pa", Temp_Pres.Temperature, Temp_Pres.Pressure);
+				TEXT_SetText(hItem, (char *)Data);
+				pMsg->MsgId = 0;
 			break;
   case WM_NOTIFY_PARENT:
     Id    = WM_GetId(pMsg->hWinSrc);
@@ -327,7 +362,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 *
 *       CreateMainWindow
 */
-WM_HWIN CreateMainWindow(void);
+
 WM_HWIN CreateMainWindow(void) {
   WM_HWIN hWin;
 

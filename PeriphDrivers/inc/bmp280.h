@@ -27,13 +27,13 @@
  */
  // Структура, хранящая параметры конфигурации для датчика BMP280
  // Для использования начальной конфигурации необходимо использовать функцию bmp280_init_default_params
-typedef struct {
-    uint8_t mode;
-    uint8_t filter;
-    uint8_t oversampling_pressure;
-    uint8_t oversampling_temperature;
-    uint8_t standby;
-} bmp280_params_t;
+//typedef struct {
+//    uint8_t mode;
+//    uint8_t filter;
+//    uint8_t oversampling_pressure;
+//    uint8_t oversampling_temperature;
+//    uint8_t standby;
+//} bmp280_params_t;
 
 //Структура, хранящая калибровочные коэффициенты датчика и его адрес
 typedef struct {
@@ -75,7 +75,7 @@ typedef struct {
 *       oversampling: x4
 *     standby time: 250ms
 */
-void bmp280_init_default_params(bmp280_params_t *params); 
+//void bmp280_init_default_params(bmp280_params_t *params); 
 
 /**
  * Initialize BMP280 module, probes for the device, soft resets the device,
@@ -89,7 +89,7 @@ void bmp280_init_default_params(bmp280_params_t *params);
  * This may be called again to soft reset the device and initialize it again.
  */
  //Инициализация датчика, считывание калибровочных коэффициентов
-bool bmp280_init(BMP280_HandleTypedef *dev, bmp280_params_t *params);
+bool bmp280_init(BMP280_HandleTypedef *dev);
 
 /**
  * Start measurement in forced mode.
