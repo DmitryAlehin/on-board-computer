@@ -27,7 +27,7 @@
 typedef enum 
 {
 	TDA7318_INIT_OK = 0,
-	TDA7318_WAIT_INIT,
+	TDA7318_WAIT_INIT
 }TDA7318_States_Typedef;
 
 typedef enum 
@@ -39,9 +39,10 @@ typedef enum
 
 typedef enum 
 {
-	RADIO_SWITCH = 0,
-	BT_SWITCH,
-	AUX_SWITCH
+	RADIO_SWITCH = 0x01,
+	BT_SWITCH = 0x02,
+	AUX_SWITCH = 0x03,
+	INPUT_1_SWITCH = 0x00
 }Audio_Switch_States_Typedef;
 
 void TDA7318_SetVolume(uint8_t Volume);

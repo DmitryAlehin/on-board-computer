@@ -41,7 +41,10 @@ void MX_RTC_Init(void)
   hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
   hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
   hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-  
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   /* USER CODE BEGIN Check_RTC_BKUP */
 	HAL_PWR_EnableBkUpAccess();
@@ -92,18 +95,17 @@ void MX_RTC_Init(void)
 }
 }
 
-
 //void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
 //{
 
 //  if(rtcHandle->Instance==RTC)
 //  {
 //  /* USER CODE BEGIN RTC_MspInit 0 */
-//		
+////		
 //  /* USER CODE END RTC_MspInit 0 */
 //    /* RTC clock enable */
 //    __HAL_RCC_RTC_ENABLE();
-//		
+
 //    /* RTC interrupt Init */
 //    HAL_NVIC_SetPriority(RTC_WKUP_IRQn, 5, 0);
 //    HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
@@ -119,7 +121,7 @@ void MX_RTC_Init(void)
 //  if(rtcHandle->Instance==RTC)
 //  {
 //  /* USER CODE BEGIN RTC_MspDeInit 0 */
-//	
+////	
 //  /* USER CODE END RTC_MspDeInit 0 */
 //    /* Peripheral clock disable */
 //    __HAL_RCC_RTC_DISABLE();

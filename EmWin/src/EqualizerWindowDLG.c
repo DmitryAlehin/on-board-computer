@@ -51,6 +51,7 @@
 
 // USER START (Optionally insert additional defines)
 extern GUIHandles GuiHandles;
+extern Audio_Switch_States_Typedef Audio_Switch;
 // USER END
 
 /*********************************************************************
@@ -77,7 +78,7 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { SLIDER_CreateIndirect, "RL_Slider", ID_SLIDER_4, 450, 150, 50, 320, 8, 0x0, 0 },
   { SLIDER_CreateIndirect, "RR_Slider", ID_SLIDER_5, 560, 150, 50, 320, 8, 0x0, 0 },
   { SLIDER_CreateIndirect, "Amp_Slider", ID_SLIDER_6, 680, 150, 50, 200, 8, 0x0, 0 },
-  { BUTTON_CreateIndirect, "Back_Button", ID_BUTTON_0, 648, 378, 150, 100, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "Back_Button", ID_BUTTON_0, 698, 410, 100, 70, 0, 0x0, 0 },
   { TEXT_CreateIndirect, "Bass_Text", ID_TEXT_1, 0, 100, 60, 40, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "Treble_Text", ID_TEXT_2, 110, 100, 70, 40, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "FL_Text", ID_TEXT_3, 210, 100, 100, 40, 0, 0x64, 0 },
@@ -195,27 +196,40 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		TEXT_SetTextColor(hItem, GUI_BLUE_COLOR);
     TEXT_SetText(hItem, "");
     // USER START (Optionally insert additional code for further widget initialization)
+//		TDA7318_SetVolume(Saved_Parameters.Volume);		
+//		TDA7318_SetBass(Saved_Parameters.Bass);
+//		TDA7318_SetTreble(Saved_Parameters.Treble);
+//		TDA7318_SetAmplification(Saved_Parameters.Amplification);
+//		TDA7318_SetAttenuation(TDA7318_SPEAKER_LF, Saved_Parameters.FL);
+//		TDA7318_SetAttenuation(TDA7318_SPEAKER_RF, Saved_Parameters.FR);
+//		TDA7318_SetAttenuation(TDA7318_SPEAKER_LR, Saved_Parameters.RL);
+//		TDA7318_SetAttenuation(TDA7318_SPEAKER_RR, Saved_Parameters.RR);
+		
+		TDA7318_SetVolume(Saved_Parameters.Volume);		
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_0);
 		SLIDER_SetRange(hItem, 0, 15);
-		SLIDER_SetValue(hItem, Saved_Parameters.Bass);
+		SLIDER_SetValue(hItem, ~(Saved_Parameters.Bass -16));
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_1);
 		SLIDER_SetRange(hItem, 0, 15);
-		SLIDER_SetValue(hItem, Saved_Parameters.Treble);
+		SLIDER_SetValue(hItem, ~(Saved_Parameters.Treble -16));
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_2);
 		SLIDER_SetRange(hItem, 0, 12);
-		SLIDER_SetValue(hItem, Saved_Parameters.FL);
+		SLIDER_SetValue(hItem, ~(Saved_Parameters.FL - 13));
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_3);
 		SLIDER_SetRange(hItem, 0, 12);
-		SLIDER_SetValue(hItem, Saved_Parameters.FR);
+		SLIDER_SetValue(hItem, ~(Saved_Parameters.FR - 13));
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_4);
 		SLIDER_SetRange(hItem, 0, 12);
-		SLIDER_SetValue(hItem, Saved_Parameters.RL);
+		SLIDER_SetValue(hItem, ~(Saved_Parameters.RL - 13));
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_5);
 		SLIDER_SetRange(hItem, 0, 12);
-		SLIDER_SetValue(hItem, Saved_Parameters.RR);
+		SLIDER_SetValue(hItem, ~(Saved_Parameters.RR - 13));
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_6);
 		SLIDER_SetRange(hItem, 1, 4);
 		SLIDER_SetValue(hItem, Saved_Parameters.Amplification);
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
+		TEXT_SetText(hItem, "");
+		TDA7318_SelectInput(Audio_Switch);
 		pMsg->MsgId = 0;
     // USER END
     break;

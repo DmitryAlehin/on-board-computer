@@ -7,8 +7,8 @@
 #define W25Q_SECTOR_4           0x04
 #define W25Q_BLOCK_64           0x40
 #define W25Q_PAGE_16            0x1FFF
-#define W25Q_WRITE_ENABLE       0X06
-#define W25Q_WRRITE_DISABLE     0X04
+#define W25Q_WRITE_ENABLE       0x06
+#define W25Q_WRITE_DISABLE      0x04
 #define W25Q_RD_STATUS_1        0x05       
 #define W25Q_RD_STATUS_2        0x35
 #define W25Q_WR_STATUS          0x01
@@ -28,6 +28,8 @@
 #define W25Q_RD_UNIQUE_ID       0x4B
 #define W25Q_JEDEC_ID           0x9F
 #define W25Q_READ_PAGE          0x0B
+#define W25Q_PAGE_LEN           256
+
 typedef struct
 {
 	uint8_t Brightness;
@@ -49,8 +51,10 @@ typedef struct
 }Saved_parameters_Typedef;
 
 void W25Q_ChipErase(void);
-void W25Q_Write(Saved_parameters_Typedef *Params);
-void W25Q_Read(Saved_parameters_Typedef *Params);
+void W25Q_Write(uint8_t *page, uint16_t pagenum);
+void W25Q_Read(uint8_t *page, uint16_t pagenum);
 void w25q_SetBlockProtect(uint8_t protect);
 void w25q_WaitForReady(void);
+void ConvertStructToArray(Saved_parameters_Typedef *Struct, uint8_t *Array);
+void ConvertArrayToStruct( uint8_t *Array, Saved_parameters_Typedef *Struct);
 #endif

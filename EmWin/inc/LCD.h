@@ -750,7 +750,8 @@ void LCD_X_WriteM01(unsigned char * pData, int NumBytes);
 
 void delay_time(unsigned int i);
 void SSD1963_Clear(uint16_t p);
-	
+void LCD_Brightness(uint8_t Brightness);
+
 #if defined(__cplusplus)
   }
 #endif

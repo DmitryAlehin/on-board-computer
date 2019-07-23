@@ -239,3 +239,4 @@ void SSD1963_DrawCross(uint16_t Xpos,uint16_t Ypos)
 //    for(b=0;b<i;b++)
 //    for(a=0;a<1000;a++);
 //}
+

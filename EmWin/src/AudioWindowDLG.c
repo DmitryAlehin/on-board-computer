@@ -56,7 +56,9 @@ extern BT_Values_Typedef BT_Value;
 extern BT_PowerMode_Typedef BT_PowerMode;
 extern TDA7318_States_Typedef TDA7318_General_State;
 extern TDA7318_Volume_States_Typedef TDA7318_Volume_State;
-extern uint8_t Volume;
+uint8_t Volume;
+extern Audio_Switch_States_Typedef Audio_Switch;
+extern GUI_CONST_STORAGE GUI_FONT GUI_FontArialBlack32;
 // USER END
 
 /*********************************************************************
@@ -85,7 +87,7 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { BUTTON_CreateIndirect, "Play_Button", ID_BUTTON_7, 380, 240, 100, 70, 0, 0x0, 0 },
   { BUTTON_CreateIndirect, "MUTE_Button", ID_BUTTON_8, 648, 200, 150, 100, 0, 0x0, 0 },    
   { TEXT_CreateIndirect, "AUDIO_Text", ID_TEXT_1, 220, 140, 400, 50, 0, 0x0, 0 },
-  { BUTTON_CreateIndirect, "Main_Button", ID_BUTTON_9, 648, 378, 150, 100, 0, 0x0, 0 },
+  { BUTTON_CreateIndirect, "Main_Button", ID_BUTTON_9, 698, 410, 100, 70, 0, 0x0, 0 },
   { TEXT_CreateIndirect, "Cons_Text", ID_TEXT_2, 675, 0, 125, 30, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "Bat_Text", ID_TEXT_3, 570, 0, 100, 30, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "AUDIO_Text", ID_TEXT_4, 380, 55, 100, 50, 0, 0x64, 0 },
@@ -126,17 +128,6 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     //
     // Initialization of 'AudioWindow'
     //
-//		SLIDER_GetSkinFlexProps(&Slider_Props, SLIDER_SKINFLEX_PI_PRESSED);
-//		Slider_Props.aColorFrame[0] = GUI_BLUE_COLOR;
-//		Slider_Props.aColorFrame[1] = GUI_BLUE_COLOR;
-//		Slider_Props.ColorFocus = GUI_GRAY_COLOR;
-//		Slider_Props.ColorTick = GUI_BLUE_COLOR;
-//		Slider_Props.aColorInner[0] = GUI_BLUE_COLOR;
-//		Slider_Props.aColorInner[1] = GUI_BLUE_COLOR;
-//		Slider_Props.aColorShaft[0] = GUI_BLUE_COLOR;
-//		Slider_Props.aColorShaft[1] = GUI_BLUE_COLOR;
-//		SLIDER_SetSkinFlexProps(&Slider_Props, SLIDER_SKINFLEX_PI_PRESSED);
-//		SLIDER_SetSkinFlexProps(&Slider_Props, SLIDER_SKINFLEX_PI_UNPRESSED);
     hItem = pMsg->hWin;
     WINDOW_SetBkColor(hItem, GUI_BKCOLOR);
     //
@@ -179,22 +170,25 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     // Initialization of 'Tr_plus_Button'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_5);
-    BUTTON_SetText(hItem, ">>|");
-    BUTTON_SetFont(hItem, GUI_FONT_32B_1);
+		sprintf((char *)Data, "%c%c%c", 13, 13, 108);
+    BUTTON_SetText(hItem, (char *)Data);
+    BUTTON_SetFont(hItem, &GUI_FontArialBlack32);
 		BUTTON_SetFocussable(hItem, 0);
     //
     // Initialization of 'Tr_minus_Button'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_6);
-    BUTTON_SetText(hItem, "|<<");
-    BUTTON_SetFont(hItem, GUI_FONT_32B_1);
+    sprintf((char *)Data, "%c%c%c", 108, 12, 12);
+    BUTTON_SetText(hItem, (char *)Data);
+    BUTTON_SetFont(hItem, &GUI_FontArialBlack32);
 		BUTTON_SetFocussable(hItem, 0);
     //
     // Initialization of 'Play_Button'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
-    BUTTON_SetText(hItem, "|>");
-    BUTTON_SetFont(hItem, GUI_FONT_32B_1);
+    sprintf((char *)Data, "%c", 13);
+    BUTTON_SetText(hItem, (char *)Data);
+    BUTTON_SetFont(hItem, &GUI_FontArialBlack32);
 		BUTTON_SetFocussable(hItem, 0);
     //
     // Initialization of 'MUTE_Button'
@@ -216,7 +210,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_9);
     BUTTON_SetText(hItem, "Main");
-    BUTTON_SetFont(hItem, GUI_FONT_32B_1);
+    BUTTON_SetFont(hItem, GUI_FONT_24B_1);
 		BUTTON_SetFocussable(hItem, 0);    
     //
     // Initialization of 'Cons_Text'
@@ -252,36 +246,21 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		TEXT_SetWrapMode(hItem, GUI_WRAPMODE_WORD);
 		TEXT_SetText(hItem, "");
     // USER START (Optionally insert additional code for further widget initialization)
-		
-		if(TDA7318_General_State == TDA7318_WAIT_INIT)
-		{
-			HAL_GPIO_WritePin(TDA7813_EN_GPIO_Port, TDA7813_EN_Pin, GPIO_PIN_SET);
-			Volume = 30;
-			Saved_Parameters.Bass = 8;
-			Saved_Parameters.Treble = 8;
-			Saved_Parameters.Amplification = 4;
-			Saved_Parameters.FL = 0;
-			Saved_Parameters.FR = 0;
-			Saved_Parameters.RL = 0;
-			Saved_Parameters.RR = 0;
-//			TDA7318_SetVolume(Volume);		
-			TDA7318_SetBass(Saved_Parameters.Bass);
-			TDA7318_SetTreble(Saved_Parameters.Treble);
-			TDA7318_SetAmplification(Saved_Parameters.Amplification);
-			TDA7318_SetAttenuation(TDA7318_SPEAKER_LF, Saved_Parameters.FL);
-			TDA7318_SetAttenuation(TDA7318_SPEAKER_RF, Saved_Parameters.FR);
-			TDA7318_SetAttenuation(TDA7318_SPEAKER_LR, Saved_Parameters.RL);
-			TDA7318_SetAttenuation(TDA7318_SPEAKER_RR, Saved_Parameters.RR);
-			TDA7318_SelectInput(INPUT_1);
-			TDA7318_General_State = TDA7318_INIT_OK;
-		}
-		
+		TDA7318_SetVolume(Saved_Parameters.Volume);		
+		TDA7318_SetBass(Saved_Parameters.Bass);
+		TDA7318_SetTreble(Saved_Parameters.Treble);
+		TDA7318_SetAmplification(Saved_Parameters.Amplification);
+		TDA7318_SetAttenuation(TDA7318_SPEAKER_LF, Saved_Parameters.FL);
+		TDA7318_SetAttenuation(TDA7318_SPEAKER_RF, Saved_Parameters.FR);
+		TDA7318_SetAttenuation(TDA7318_SPEAKER_LR, Saved_Parameters.RL);
+		TDA7318_SetAttenuation(TDA7318_SPEAKER_RR, Saved_Parameters.RR);
+		TDA7318_SelectInput(Audio_Switch);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_0);		
 		SLIDER_SetRange(hItem, 0, 63);
-		SLIDER_SetValue(hItem, Volume);
+		SLIDER_SetValue(hItem, ~(Saved_Parameters.Volume - 64));
 		if(TDA7318_Volume_State == TDA7318_UNMUTE)
 			{
-				TDA7318_SetVolume(Volume);
+				TDA7318_SetVolume(Saved_Parameters.Volume);
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_8);
 				BUTTON_SetText(hItem, "MUTE");
 				BUTTON_SetFont(hItem, GUI_FONT_32B_1);
@@ -297,7 +276,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 			}
 			
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-		sprintf((char *) Data, "VOLUME: %d", Volume);
+		sprintf((char *) Data, "VOLUME: %d", Saved_Parameters.Volume);
 		TEXT_SetText(hItem, (char *)Data);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_0);
 		HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
@@ -317,12 +296,6 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 			sprintf((char *)Data, "Name:%s\r\nPIN:%s", BT_Value.BT_NAME, BT_Value.PIN);
 			TEXT_SetText(hItem, (char *)Data);
 		}
-//		if(BT_State == BT_ON)
-//		{
-////			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-////			TEXT_SetText(hItem, "Bluetooth");
-////			TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
-//		}
 		if(BT_State == BT_CONNECTED)
 		{
 			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
@@ -338,26 +311,17 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		if(BT_State == BT_PLAY)
 		{
 			hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
-			BUTTON_SetText(hItem, "||");
-			BUTTON_SetFont(hItem, GUI_FONT_32B_1);
+			sprintf((char *)Data, "%c%c", 108, 108);
+			BUTTON_SetText(hItem, (char *)Data);
 			BUTTON_SetFocussable(hItem, 0);
 		}
 		if(BT_State == BT_PAUSE)
 		{
 			hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
-			BUTTON_SetText(hItem, "|>");
-			BUTTON_SetFont(hItem, GUI_FONT_32B_1);
+			sprintf((char *)Data, "%c", 13);
+			BUTTON_SetText(hItem, (char *)Data);
 			BUTTON_SetFocussable(hItem, 0);			
 		}
-//		if(BT_General_State == BT_OFF)
-//		{
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-//			TEXT_SetText(hItem, "Music player");
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);			
-//			TEXT_SetText(hItem, "");
-//			BT_General_State = WAIT_BT_INIT;
-//			BT_State = WAIT;
-//		}	
 		if(BT_PowerMode == OFF)
 		{
 			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
@@ -432,43 +396,19 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				break;
 			case BT_PLAY:
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
-				BUTTON_SetText(hItem, "||");
-				BUTTON_SetFont(hItem, GUI_FONT_32B_1);
+				sprintf((char *)Data, "%c%c", 108, 108);
+				BUTTON_SetText(hItem, (char *)Data);
 				BUTTON_SetFocussable(hItem, 0);
 				break;
 			case BT_PAUSE:
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
-				BUTTON_SetText(hItem, "|>");
-				BUTTON_SetFont(hItem, GUI_FONT_32B_1);
+				sprintf((char *)Data, "%c", 13);
+				BUTTON_SetText(hItem, (char *)Data);
 				BUTTON_SetFocussable(hItem, 0);		
 				break;
+			case WAIT:	
+				break;
 		}
-//		if(BT_State == BT_CONNECTED)
-//		{
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-//			TEXT_SetText(hItem, "Bluetooth connected");
-//			TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
-//		}
-//		if(BT_State == BT_DISCONNECTED)
-//		{
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-//			TEXT_SetText(hItem, "Bluetooth disconnected");
-//			TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
-//		}
-//		if(BT_State == BT_PLAY)
-//		{
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
-//			BUTTON_SetText(hItem, "||");
-//			BUTTON_SetFont(hItem, GUI_FONT_32B_1);
-//			BUTTON_SetFocussable(hItem, 0);
-//		}
-//		if(BT_State == BT_PAUSE)
-//		{
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
-//			BUTTON_SetText(hItem, "|>");
-//			BUTTON_SetFont(hItem, GUI_FONT_32B_1);
-//			BUTTON_SetFocussable(hItem, 0);			
-//		}
 		pMsg->MsgId = 0;
 		break;
 	case WM_UPDATE_BT_POWERMODE:
@@ -484,6 +424,11 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
 			TEXT_SetText(hItem, "Bluetooth");
 		}
+		pMsg->MsgId = 0;
+		break;
+	case WM_AUX:
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+		TEXT_SetText(hItem, "AUX");
 		pMsg->MsgId = 0;
 		break;
   case WM_NOTIFY_PARENT:
@@ -514,7 +459,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-				TDA7318_SelectInput(AUX_INPUT);				
+				TDA7318_SelectInput(AUX_SWITCH);
+				Audio_Switch = AUX_SWITCH;
+				msg.MsgId = WM_AUX;
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)
@@ -529,8 +476,8 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-				TDA7318_SelectInput(RADIO_INPUT);
-				HAL_GPIO_TogglePin(RADIO_EN_GPIO_Port, RADIO_EN_Pin);		
+				TDA7318_SelectInput(RADIO_SWITCH);
+				Audio_Switch = RADIO_SWITCH;
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)
@@ -548,14 +495,16 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				if(BT_PowerMode == OFF)
 				{					
 					HAL_GPIO_WritePin(BT_EN_GPIO_Port, BT_EN_Pin, GPIO_PIN_SET);
-					TDA7318_SelectInput(BT_INPUT);
+					TDA7318_SelectInput(BT_SWITCH);
+					Audio_Switch = BT_SWITCH;
 					BT_PowerMode = ON;
 					msg.MsgId = WM_UPDATE_BT_POWERMODE;
 				}
 				else if(BT_PowerMode == ON)
 				{					
 					HAL_GPIO_WritePin(BT_EN_GPIO_Port, BT_EN_Pin, GPIO_PIN_RESET);
-					TDA7318_SelectInput(INPUT_1);
+					TDA7318_SelectInput(INPUT_1_SWITCH);
+					Audio_Switch = INPUT_1_SWITCH;
 					BT_PowerMode = OFF;
 					msg.MsgId = WM_UPDATE_BT_POWERMODE;
 				}
@@ -626,7 +575,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				}
 				else
 				{
-					TDA7318_SetVolume(Volume);
+					TDA7318_SetVolume(Saved_Parameters.Volume);
 					TDA7318_Volume_State = TDA7318_UNMUTE;
 					msg.MsgId = WM_UPDATE_AUDIO;
 				}
@@ -648,13 +597,14 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
+				
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_0);
 				Volume = SLIDER_GetValue(hItem);
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
 				sprintf((char *) Data, "VOLUME: %d", Volume);
 				TEXT_SetText(hItem, (char *)Data);
-				Volume =~ (Volume - 64);				
-				TDA7318_SetVolume(Volume);
+				Saved_Parameters.Volume =~ (Volume - 64);				
+				TDA7318_SetVolume(Saved_Parameters.Volume);
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)

@@ -42,6 +42,12 @@ typedef enum
 
 typedef enum 
 {
+	CONSUMPTION_RECEIVE = 0,
+	CONSUMPTION_WAIT_RECEIVE
+}OBD_Average_Cons_States_Typedef;
+
+typedef enum 
+{
 	OBD_OK = 0,
 	IC_OK,
 	PCM_OK,
@@ -58,7 +64,7 @@ typedef struct
 
 typedef struct
 {	
-	float Voltage, ECT, FUEL, Fuel_consumption, K_MAP, LH_consumption, FUEL_Liters;	
+	float Voltage, ECT, FUEL, Fuel_consumption, LH_consumption, FUEL_Liters;	
 }CarValues_Typedef;
 
 

@@ -202,7 +202,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     // Initialization of 'Cons_Checkbox'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_2);
-    CHECKBOX_SetText(hItem, "L/h");
+    CHECKBOX_SetText(hItem, "L/%");
     CHECKBOX_SetTextColor(hItem, GUI_BLUE_COLOR);
 		CHECKBOX_SetFocusColor(hItem, GUI_GRAY_COLOR);
     CHECKBOX_SetFont(hItem, GUI_FONT_24B_1);
@@ -288,7 +288,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     // USER START (Optionally insert additional code for further widget initialization)
 		
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_0);
-		SLIDER_SetRange(hItem, 15, 100);
+		SLIDER_SetRange(hItem, 15, 255);
 		SLIDER_SetValue(hItem, Saved_Parameters.Brightness);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);
 		sprintf((char *) Data, "Brightness: %d", Saved_Parameters.Brightness);
@@ -365,8 +365,8 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		LISTWHEEL_SetBkColor(hItem, LISTWHEEL_CI_SEL, GUI_BKCOLOR);
 		LISTWHEEL_SetTextColor(hItem, LISTWHEEL_CI_SEL, GUI_GREEN);
 		LISTWHEEL_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
-		for (uint8_t i = 0; i < 100; i++) {
-      sprintf(acBuffer, "20%i", i);
+		for (uint16_t i = 2000; i < 2100; i++) {
+      sprintf(acBuffer, "%i", i);
     LISTWHEEL_AddString(hItem, acBuffer);
 		}
     LISTWHEEL_SetSnapPosition(hItem, 30);
@@ -672,6 +672,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);
 				sprintf((char *) Data, "Brightness: %d", Saved_Parameters.Brightness);
 				TEXT_SetText(hItem, (char *)Data);
+				LCD_Brightness(Saved_Parameters.Brightness);
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)

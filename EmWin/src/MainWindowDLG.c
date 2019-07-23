@@ -39,7 +39,7 @@
 #define ID_TEXT_3         (GUI_ID_USER + 0x07)
 #define ID_TEXT_4         (GUI_ID_USER + 0x08)
 #define ID_TEXT_5         (GUI_ID_USER + 0x09)
-
+#define ID_TEXT_6         (GUI_ID_USER + 0x0A)
 
 // USER START (Optionally insert additional defines)
 RTC_TimeTypeDef time;
@@ -70,9 +70,10 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { TEXT_CreateIndirect, "Time_Text", ID_TEXT_0, 340, 110, 260, 90, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "Date_Text", ID_TEXT_1, 340, 220, 260, 30, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "Temperature_Text", ID_TEXT_2, 450, 320, 340, 50, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "Music_Text", ID_TEXT_3, 340, 0, 260, 40, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "Fuel_Text", ID_TEXT_3, 510, 430, 110, 40, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "Vbat_Text", ID_TEXT_4, 220, 430, 110, 40, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "F_Text", ID_TEXT_5, 350, 430, 160, 40, 0, 0x64, 0 },
+	{ TEXT_CreateIndirect, "Temp_Engine_Text", ID_TEXT_6, 620, 430, 110, 40, 0, 0x64, 0 },
   // USER START (Optionally insert additional widgets)
   // USER END
 };
@@ -179,38 +180,14 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
     TEXT_SetTextColor(hItem, GUI_BLUE_COLOR);
 		TEXT_SetFont(hItem, GUI_FONT_32B_1);
-//    TEXT_SetText(hItem, "Temperature: 25 C");
-		if(Saved_Parameters.Temperature_mode)
-		{
-			//вывод температуры
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
-			if((Temp_Pres.Temperature >22.0) &&(Temp_Pres.Temperature <24.0))
-			{
-				TEXT_SetTextColor(hItem, GUI_DARKGREEN);
-			}
-			if(Temp_Pres.Temperature >24.0)
-			{
-				TEXT_SetTextColor(hItem, GUI_RED_COLOR);
-			}
-			if(Temp_Pres.Temperature <22.0)
-			{
-				TEXT_SetTextColor(hItem, GUI_BLUE);
-			}
-			sprintf((char *)Data, "%.1f C, %.1f Pa", Temp_Pres.Temperature, Temp_Pres.Pressure);
-			TEXT_SetText(hItem, (char *)Data);			
-		}
-		else
-		{
-			TEXT_SetText(hItem, "");
-		}    
+		TEXT_SetText(hItem, "");  
     //
-    // Initialization of 'Music_Text'
+    // Initialization of 'Fuel_Text'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
     TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
-    TEXT_SetTextColor(hItem, GUI_MAKE_COLOR(0x00408000));
-    TEXT_SetFont(hItem, GUI_FONT_24B_1);
-//    TEXT_SetText(hItem, "Music ON\OFF");
+    TEXT_SetTextColor(hItem, GUI_BLUE_COLOR);
+		TEXT_SetFont(hItem, GUI_FONT_32B_1);
 		TEXT_SetText(hItem, "");
     //
     // Initialization of 'Vbat_Text'
@@ -226,7 +203,15 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     TEXT_SetTextAlign(hItem, GUI_TA_LEFT | GUI_TA_VCENTER);
     TEXT_SetTextColor(hItem, GUI_BLUE_COLOR);
     TEXT_SetFont(hItem, GUI_FONT_32B_1);
+		//
+    // Initialization of 'Temp_Engine_Text'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_6);
+    TEXT_SetTextAlign(hItem, GUI_TA_LEFT | GUI_TA_VCENTER);
+    TEXT_SetTextColor(hItem, GUI_RED_COLOR);
+    TEXT_SetFont(hItem, GUI_FONT_32B_1);
     // USER START (Optionally insert additional code for further widget initialization)
+//		LCD_Brightness(Saved_Parameters.Brightness);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_0);
 		HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
 		sprintf((char *)Data, "%02d:%02d", time.Hours, time.Minutes);
@@ -236,42 +221,116 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		sprintf((char *)Data, "%02d.%02d.20%02d", date.Date, date.Month, date.Year);
 		TEXT_SetText(hItem, (char *)Data);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);
-		sprintf((char *)Data, "%.1f L/100km", Car_Param.Fuel_consumption);
-		TEXT_SetText(hItem, (char *)Data);
+		if(CarParameters.VSS != 0)
+		{
+			sprintf((char *)Data, "%.1f L/100km", Saved_Parameters.Average_consumption);
+			TEXT_SetText(hItem, (char *)Data);
+		}
+		else
+		{
+			sprintf((char *)Data, "%.1f L/h", Car_Param.LH_consumption);
+			TEXT_SetText(hItem, (char *)Data);
+		}
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);
 		sprintf((char *)Data, "%.1f V", Car_Param.Voltage);
 		TEXT_SetText(hItem, (char *)Data);
+		
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
+		if(Saved_Parameters.Consumption_mode)
+		{			
+			sprintf((char *)Data, "%.1f L", Car_Param.FUEL_Liters);
+			TEXT_SetText(hItem, (char *)Data);
+		}
+		else
+		{
+			sprintf((char *)Data, "%.1f%c", Car_Param.FUEL, 37);
+			TEXT_SetText(hItem, (char *)Data);
+		}
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_6);
+		if(Car_Param.ECT >108.0)
+		{			
+			sprintf((char *)Data, "%.1f %cC", Car_Param.ECT, 176);
+			TEXT_SetText(hItem, (char *)Data);
+		}
+		else	
+		{						
+			TEXT_SetText(hItem, "");
+		}						
 		pMsg->MsgId = 0;
     // USER END
     break;
 		
 	case WM_UPDATE_MIN:
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_0);
-			HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
-			sprintf((char *)Data, "%02d:%02d", time.Hours, time.Minutes);
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_0);
+		HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
+		sprintf((char *)Data, "%02d:%02d", time.Hours, time.Minutes);
+		TEXT_SetText(hItem, (char *)Data);
+		HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+		sprintf((char *)Data, "%02d.%02d.20%02d", date.Date, date.Month, date.Year);
+		TEXT_SetText(hItem, (char *)Data);
+		pMsg->MsgId = 0;
+		break;
+	
+	case WM_UPDATE_CAR:
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);
+		if(CarParameters.VSS == 0)
+		{
+			sprintf((char *)Data, "%.1f L/100km", Saved_Parameters.Average_consumption);
 			TEXT_SetText(hItem, (char *)Data);
-			HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-			sprintf((char *)Data, "%02d.%02d.20%02d", date.Date, date.Month, date.Year);
+		}
+		else
+		{
+			sprintf((char *)Data, "%.1f L/h", Car_Param.LH_consumption);
 			TEXT_SetText(hItem, (char *)Data);
-			pMsg->MsgId = 0;
-			break;
+		}
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);
+		sprintf((char *)Data, "%.1f V", Car_Param.Voltage);
+		TEXT_SetText(hItem, (char *)Data);
 		
-		case WM_UPDATE_CAR:
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);
-			sprintf((char *)Data, "%.1f L/100km", Car_Param.Fuel_consumption);
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
+		if(!Saved_Parameters.Consumption_mode)
+		{			
+			sprintf((char *)Data, "%.1f L", Car_Param.FUEL_Liters);
 			TEXT_SetText(hItem, (char *)Data);
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);
-			sprintf((char *)Data, "%.1f V", Car_Param.Voltage);
+		}
+		else
+		{
+			sprintf((char *)Data, "%.1f%c", Car_Param.FUEL, 37);
 			TEXT_SetText(hItem, (char *)Data);
-			pMsg->MsgId = 0;
-			break;
-		case WM_UPDATE_METEO:
-				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
-				sprintf((char *)Data, "%.1f C, %.1f Pa", Temp_Pres.Temperature, Temp_Pres.Pressure);
-				TEXT_SetText(hItem, (char *)Data);
-				pMsg->MsgId = 0;
-			break;
+		}
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_6);
+		if(Car_Param.ECT >108.0)
+		{			
+			sprintf((char *)Data, "%.1f %cC", Car_Param.ECT, 176);
+			TEXT_SetText(hItem, (char *)Data);
+		}
+		else	
+		{						
+			TEXT_SetText(hItem, "");
+		}			
+		pMsg->MsgId = 0;
+		break;
+	case WM_UPDATE_METEO:		
+		//вывод температуры
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
+		if((Temp_Pres.Temperature >= 22.0) &&(Temp_Pres.Temperature <= 25.0))
+		{
+			TEXT_SetTextColor(hItem, GUI_DARKGREEN);
+		}
+		if(Temp_Pres.Temperature > 25.0)
+		{
+			TEXT_SetTextColor(hItem, GUI_RED_COLOR);
+		}
+		if(Temp_Pres.Temperature < 22.0)
+		{
+			TEXT_SetTextColor(hItem, GUI_BLUE);
+		}
+		sprintf((char *)Data, "%.1f %cC, %.1f mm Hg", Temp_Pres.Temperature, 176, Temp_Pres.Pressure);
+		TEXT_SetText(hItem, (char *)Data);		   
+		pMsg->MsgId = 0;
+		break;
+				
   case WM_NOTIFY_PARENT:
     Id    = WM_GetId(pMsg->hWinSrc);
     NCode = pMsg->Data.v;
@@ -284,11 +343,6 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-//				GUI_EndDialog(CreateMainWindow(), 0);
-////				WM_DeleteWindow(hWin);
-//				hWin = CreateSettingsWindow();
-				
-//				retCode = GUI_ExecCreatedDialog(hWin);
 				WM_DeleteWindow(pMsg->hWin);
 				hWin = CreateSettingsWindow();
         // USER END
@@ -305,13 +359,8 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-//				GUI_EndDialog(CreateMainWindow(), 0);
-////				WM_DeleteWindow(hWin);
 				WM_DeleteWindow(pMsg->hWin);
 				hWin = CreateOBDWindow();
-				
-//				retCode = GUI_ExecCreatedDialog(hWin);
-				
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)
@@ -326,14 +375,8 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-//				GUI_EndDialog(CreateMainWindow(), 0);
-////				WM_DeleteWindow(hWin);
-//				hWin = CreateAudioWindow();
 				WM_DeleteWindow(pMsg->hWin);
 				hWin = CreateAudioWindow();
-				
-//				retCode = GUI_ExecCreatedDialog(hWin);
-				
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)

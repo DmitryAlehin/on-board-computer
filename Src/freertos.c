@@ -76,13 +76,14 @@ OBD_General_States_Typedef OBD_General_State = NOP;
 CarParameters_Typedef CarParameters;
 OBD_Sign_States_Typedef OBD_Sign_State = OBD_OK;
 OBD_Data_States_Typedef OBD_Data_State = WAIT_DATA;
+OBD_Average_Cons_States_Typedef OBD_Average_Cons_State = CONSUMPTION_WAIT_RECEIVE;
 BT_General_States_Typedef BT_General_State = WAIT_BT_INIT;
 TDA7318_States_Typedef TDA7318_General_State = TDA7318_WAIT_INIT;
 TDA7318_Volume_States_Typedef TDA7318_Volume_State = TDA7318_UNMUTE;
+Audio_Switch_States_Typedef Audio_Switch = INPUT_1_SWITCH;
 BT_States_Typedef BT_State = WAIT;
 BT_Values_Typedef BT_Value;
 BT_PowerMode_Typedef BT_PowerMode = OFF;
-uint8_t Volume;
 volatile uint8_t count;
 extern uint8_t DMA_BUFFER_OBD[DMA_BUFFER_OBD_SIZE];
 extern uint8_t OBD_BUFFER[DMA_BUFFER_OBD_SIZE];
@@ -95,7 +96,10 @@ BMP280_HandleTypedef BMP280;
 TnP Temp_Pres;
 //bmp280_params_t BMP280_param;
 volatile uint8_t buf[50];
-uint8_t k = 0;
+
+uint8_t TX_BUFFER[256];
+uint8_t RX_BUFFER[256];
+float Current_Consumption[30];
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -118,6 +122,9 @@ osThreadId GUIHandle;
 osThreadId ParserHandle;
 osThreadId OBDHandle;
 osThreadId AudioHandle;
+osThreadId TouchHandle;
+osThreadId MeteoHandle;
+osThreadId SaveReadParametHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -128,8 +135,10 @@ void _GUI(void const * argument);
 void _Parser(void const * argument);
 void _OBD(void const * argument);
 void _Audio(void const * argument);
+void _Touch(void const * argument);
+void _Meteo(void const * argument);
+void _SaveReadParameters(void const * argument);
 
-extern void MX_FATFS_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* GetIdleTaskMemory prototype (linked to static allocation support) */
@@ -160,13 +169,10 @@ void MX_FREERTOS_Init(void) {
 //	BMP280.addr = BMP280_I2C_ADDRESS_0;
 //	bmp280_init_default_params(&BMP280_param);
 //	HAL_GPIO_WritePin(RADIO_EN_GPIO_Port, RADIO_EN_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(TDA7813_EN_GPIO_Port, TDA7813_EN_Pin, GPIO_PIN_SET);
 	
-	BMP280.addr = BMP280_I2C_ADDRESS_0;	
-	bmp280_init(&BMP280);	
-	Car_Param.K_MAP = 60.0;	
+//		Saved_Parameters.key = 41312;		
 //	OBD_General_State = NOP;
-	
+//	W25Q_Read(RX_BUFFER,1);
 	
   /* USER CODE END Init */
 
@@ -189,6 +195,10 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
+	/* definition and creation of SaveReadParamet */
+  osThreadDef(SaveReadParamet, _SaveReadParameters, osPriorityNormal, 0, 2048);
+  SaveReadParametHandle = osThreadCreate(osThread(SaveReadParamet), NULL);
+	
   /* definition and creation of GUI */
   osThreadDef(GUI, _GUI, osPriorityNormal, 0, 2048);
   GUIHandle = osThreadCreate(osThread(GUI), NULL);
@@ -198,17 +208,58 @@ void MX_FREERTOS_Init(void) {
   ParserHandle = osThreadCreate(osThread(Parser), NULL);
 
   /* definition and creation of OBD */
-  osThreadDef(OBD, _OBD, osPriorityNormal, 0, 2048);
+  osThreadDef(OBD, _OBD, osPriorityNormal, 0, 1024);
   OBDHandle = osThreadCreate(osThread(OBD), NULL);
 
-  /* definition and creation of Audio */ 
+  /* definition and creation of Audio */
   osThreadDef(Audio, _Audio, osPriorityNormal, 0, 512);
   AudioHandle = osThreadCreate(osThread(Audio), NULL);
+
+  /* definition and creation of Touch */
+  osThreadDef(Touch, _Touch, osPriorityNormal, 0, 512);
+  TouchHandle = osThreadCreate(osThread(Touch), NULL);
+
+  /* definition and creation of Meteo */
+  osThreadDef(Meteo, _Meteo, osPriorityNormal, 0, 256);
+  MeteoHandle = osThreadCreate(osThread(Meteo), NULL);
+
+  
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
+}
+
+/* USER CODE BEGIN Header__SaveReadParameters */
+/**
+* @brief Function implementing the SaveReadParamet thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header__SaveReadParameters */
+void _SaveReadParameters(void const * argument)
+{
+  /* USER CODE BEGIN _SaveReadParameters */
+	W25Q_Read(RX_BUFFER,1);
+	ConvertArrayToStruct(RX_BUFFER, &Saved_Parameters);
+	LCD_Brightness(Saved_Parameters.Brightness);
+  /* Infinite loop */
+  for(;;)
+  {
+		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+		ConvertStructToArray(&Saved_Parameters, TX_BUFFER);
+		W25Q_Read(RX_BUFFER,1);
+		if(memcmp(RX_BUFFER, TX_BUFFER, 256) != 0)
+		{
+			W25Q_ChipErase();
+			W25Q_Write(TX_BUFFER, 1);
+			HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+		}
+//		ConvertArrayToStruct(RX_BUFFER, &Saved_Parameters);
+    osDelay(50000);
+  }
+  /* USER CODE END _SaveReadParameters */
 }
 
 /* USER CODE BEGIN Header__GUI */
@@ -220,25 +271,18 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header__GUI */
 void _GUI(void const * argument)
 {
-  /* init code for FATFS */
-  MX_FATFS_Init();
-
   /* USER CODE BEGIN _GUI */
-//	OBD_Init();
 	GUI_Init();
 	CreateMainWindow();
-//	LCD_Clear(GUI_RED);
-//	CreateWindow();
   /* Infinite loop */
   for(;;)
   {
-    Touch_Update();
+    
 		GUI_Exec();	
 		
 		switch(msg.MsgId)
 		{
 			case WM_UPDATE_MIN:
-//				OBD_Update();
 				WM_SendMessage(GuiHandles.hMainWindow, &msg);
 				msg.MsgId = WM_UPDATE_MIN;
 				WM_SendMessage(GuiHandles.hAudioWindow, &msg);				
@@ -258,6 +302,9 @@ void _GUI(void const * argument)
 				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
 				break;
 			case WM_UPDATE_METEO:
+				WM_SendMessage(GuiHandles.hMainWindow, &msg);
+				break;
+			case WM_AUX:
 				WM_SendMessage(GuiHandles.hMainWindow, &msg);
 				break;
 		}
@@ -308,37 +355,59 @@ void _OBD(void const * argument)
 {
   /* USER CODE BEGIN _OBD */
 	float VSS, MAP, IAT, RPM, LONGFT, SHRTFT, Fb, Ft;
+	uint8_t k = 0;
   /* Infinite loop */
   for(;;)
   {		
-		BT_Init();		
-		OBD_Init();		
-		if(OBD_General_State == OBD_INIT)
-		{	
-			OBD_Update();
-		
-		if(OBD_Data_State == COMPLETE_ALL_DATA)
+		if(Saved_Parameters.OBD_mode)
 		{			
-			Car_Param.Voltage = CarParameters.Voltage;
-			Car_Param.ECT = CarParameters.ECT - 40.0;
-			Car_Param.FUEL = ((CarParameters.FUEL) * 100.0) / 255.0;
-			Car_Param.FUEL_Liters = Car_Param.FUEL / 100.0 * 55.0;
-			VSS = CarParameters.VSS;
-			if(VSS <= 0)
-			{
-				VSS = 1;
+			OBD_Init();		
+			if(OBD_General_State == OBD_INIT)
+			{	
+				OBD_Update();
+			
+			if(OBD_Data_State == COMPLETE_ALL_DATA)
+			{			
+				Car_Param.Voltage = CarParameters.Voltage;
+				Car_Param.ECT = CarParameters.ECT - 40.0;
+				Car_Param.FUEL = ((CarParameters.FUEL) * 100.0) / 255.0;
+				Car_Param.FUEL_Liters = Car_Param.FUEL / 100.0 * 55.0;
+				VSS = CarParameters.VSS;
+				if(VSS <= 0)
+				{
+					VSS = 1;
+				}
+				IAT = CarParameters.IAT - 40.0;
+				LONGFT = ((CarParameters.LONGFT - 128.0) * 100.0) / 128.0;
+				SHRTFT = ((CarParameters.SHRTFT - 128.0) * 100.0) / 128.0;
+				MAP = CarParameters.MAP;
+				RPM = (CarParameters.RPM_A * 256.0 + CarParameters.RPM_B)/4;
+				Fb = (Saved_Parameters.K / 100.0) * (RPM / 60.0) * MAP * 0.8 * 28.98 / (8.31441 * (IAT + 273.15));
+				Ft = 1000.0 * (1 + 0.001 * (IAT - 20.0)) * 3600.0 * Fb * 1 + ((SHRTFT + LONGFT) / 100.0) / (14.7 * 750.0);
+				Car_Param.Fuel_consumption = Ft / (VSS * 1000000.0);
+				Car_Param.LH_consumption = Ft;
+				if(OBD_Average_Cons_State == CONSUMPTION_WAIT_RECEIVE)
+				{
+				Current_Consumption[k] = Car_Param.Fuel_consumption;
+				k++;
+				if(k == 50)
+				{
+					OBD_Average_Cons_State = CONSUMPTION_RECEIVE;
+					k = 0;
+				}
+				}
+				OBD_Data_State = CALCULATE_END;
+				msg.MsgId = WM_UPDATE_CAR;			
 			}
-			IAT = CarParameters.IAT - 40.0;
-			LONGFT = ((CarParameters.LONGFT - 128.0) * 100.0) / 128.0;
-			SHRTFT = ((CarParameters.SHRTFT - 128.0) * 100.0) / 128.0;
-			MAP = CarParameters.MAP;
-			RPM = (CarParameters.RPM_A * 256.0 + CarParameters.RPM_B)/4;
-			Fb = (Car_Param.K_MAP / 100.0) * (RPM / 60.0) * MAP * 0.8 * 28.98 / (8.31441 * (IAT + 273.15));
-			Ft = 1000.0 * (1 + 0.001 * (IAT - 20.0)) * 3600.0 * Fb * 1 + ((SHRTFT + LONGFT) / 100.0) / (14.7 * 750.0);
-			Car_Param.Fuel_consumption = Ft / (VSS * 1000000.0);
-			Car_Param.LH_consumption = Ft;
-			OBD_Data_State = CALCULATE_END;
-			msg.MsgId = WM_UPDATE_CAR;			
+			if(OBD_Average_Cons_State == CONSUMPTION_RECEIVE)
+			{
+				for(uint8_t i = 0; i < 50; i++)
+				{
+					Current_Consumption[0] += Current_Consumption[i];
+				}
+				Saved_Parameters.Average_consumption = Current_Consumption[0]/50.0;
+				OBD_Average_Cons_State = CONSUMPTION_WAIT_RECEIVE;
+			}
 		}
 	}
 }
@@ -356,46 +425,67 @@ void _OBD(void const * argument)
 void _Audio(void const * argument)
 {
   /* USER CODE BEGIN _Audio */
-	float Temperature, Pressure;
-	
   /* Infinite loop */
   for(;;)
   {	
-//		if(BT_General_State == BT_ON)
-//		{
-			
-//		}
-		if(Saved_Parameters.Temperature_mode)
-		{				
-		bmp280_read_float(&BMP280, &Temperature, &Pressure);
-		Temp_Pres.Temperature = Temperature;
-		Temp_Pres.Pressure = Pressure;
-		msg.MsgId = WM_UPDATE_METEO;
-		}
-		osDelay(5000);
-//			for(uint8_t i = 0; i<128; i++)
-//		{
-//			if(HAL_I2C_IsDeviceReady(&hi2c1, i, 10, 100) == HAL_OK)
-//			{
-//				buf[k] = i;
-//				k++;
-//			}
-//			if(i == 127)
-//			{
-//				buf[4] = 1;
-//			}
-//		}
+		BT_Init();
   }
   /* USER CODE END _Audio */
 }
 
+/* USER CODE BEGIN Header__Touch */
+/**
+* @brief Function implementing the Touch thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header__Touch */
+void _Touch(void const * argument)
+{
+  /* USER CODE BEGIN _Touch */
+  /* Infinite loop */
+  for(;;)
+  {		
+		Touch_Update();   
+		
+  }
+  /* USER CODE END _Touch */
+}
+
+/* USER CODE BEGIN Header__Meteo */
+/**
+* @brief Function implementing the Meteo thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header__Meteo */
+void _Meteo(void const * argument)
+{
+  /* USER CODE BEGIN _Meteo */
+	HAL_GPIO_WritePin(RADIO_BMP280_EN_GPIO_Port, RADIO_BMP280_EN_Pin, GPIO_PIN_SET);	
+	BMP280.addr = BMP280_I2C_ADDRESS_0;	
+	bmp280_init(&BMP280);
+	bmp280_read_float(&BMP280, &Temp_Pres.Temperature, &Temp_Pres.Pressure);
+	Temp_Pres.Pressure = Temp_Pres.Pressure/133.3224;
+  /* Infinite loop */
+  for(;;)
+  {
+    if(Saved_Parameters.Temperature_mode)
+		{				
+		bmp280_read_float(&BMP280, &Temp_Pres.Temperature, &Temp_Pres.Pressure);
+		Temp_Pres.Pressure = Temp_Pres.Pressure/133.3224;
+		msg.MsgId = WM_UPDATE_METEO;
+		}
+		osDelay(5000);
+  }
+  /* USER CODE END _Meteo */
+}
+
+
+
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-//void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
-//{	
-//	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-//	msg.MsgId = WM_UPDATE_MIN;	
-//}
+
 
 void RTC_WakeupCallback(void) {		
 	msg.MsgId = WM_UPDATE_MIN;

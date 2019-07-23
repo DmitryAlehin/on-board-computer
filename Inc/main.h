@@ -93,12 +93,14 @@ void Error_Handler(void);
 #define BT_EN_GPIO_Port GPIOE
 #define OBDII_EN_Pin GPIO_PIN_3
 #define OBDII_EN_GPIO_Port GPIOE
-#define RADIO_EN_Pin GPIO_PIN_4 //6
-#define RADIO_EN_GPIO_Port GPIOE
-#define TDA7813_EN_Pin GPIO_PIN_6 //4
-#define TDA7813_EN_GPIO_Port GPIOE
-#define SDIO_EN_Pin GPIO_PIN_4
-#define SDIO_EN_GPIO_Port GPIOC
+#define TDA7318_EN_Pin GPIO_PIN_4
+#define TDA7318_EN_GPIO_Port GPIOE
+#define RADIO_BMP280_EN_Pin GPIO_PIN_6
+#define RADIO_BMP280_EN_GPIO_Port GPIOE
+#define LED1_Pin GPIO_PIN_6
+#define LED1_GPIO_Port GPIOA
+#define LED2_Pin GPIO_PIN_7
+#define LED2_GPIO_Port GPIOA
 #define T_IRQ_Pin GPIO_PIN_5
 #define T_IRQ_GPIO_Port GPIOC
 #define F_CS_Pin GPIO_PIN_0
