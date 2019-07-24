@@ -119,9 +119,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
   // USER START (Optionally insert additional variables)	
 	uint8_t Data[20];
 	char    acBuffer[32];
-	GUI_PID_STATE State;
-  int           Item;  
-	SLIDER_SKINFLEX_PROPS  Slider_Props;
+  int           Item;
 	SPINBOX_SKINFLEX_PROPS Spinbox_Props;
 	CHECKBOX_SKINFLEX_PROPS Checkbox_Props;
   // USER END

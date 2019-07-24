@@ -40,6 +40,7 @@ void MX_RTC_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 void RTC_Interrupt(void);
+void RTC_Fix_Date(RTC_DateTypeDef *sDate);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

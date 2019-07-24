@@ -72,18 +72,18 @@
 GUI_PID_STATE TS_State;
 WM_MESSAGE msg;
 
-OBD_General_States_Typedef OBD_General_State = NOP;
+volatile OBD_General_States_Typedef OBD_General_State = NOP;
 CarParameters_Typedef CarParameters;
-OBD_Sign_States_Typedef OBD_Sign_State = OBD_OK;
-OBD_Data_States_Typedef OBD_Data_State = WAIT_DATA;
-OBD_Average_Cons_States_Typedef OBD_Average_Cons_State = CONSUMPTION_WAIT_RECEIVE;
-BT_General_States_Typedef BT_General_State = WAIT_BT_INIT;
-TDA7318_States_Typedef TDA7318_General_State = TDA7318_WAIT_INIT;
-TDA7318_Volume_States_Typedef TDA7318_Volume_State = TDA7318_UNMUTE;
-Audio_Switch_States_Typedef Audio_Switch = INPUT_1_SWITCH;
-BT_States_Typedef BT_State = WAIT;
-BT_Values_Typedef BT_Value;
-BT_PowerMode_Typedef BT_PowerMode = OFF;
+volatile OBD_Sign_States_Typedef OBD_Sign_State = OBD_OK;
+volatile OBD_Data_States_Typedef OBD_Data_State = WAIT_DATA;
+volatile OBD_Average_Cons_States_Typedef OBD_Average_Cons_State = CONSUMPTION_WAIT_RECEIVE;
+volatile BT_General_States_Typedef BT_General_State = WAIT_BT_INIT;
+volatile TDA7318_States_Typedef TDA7318_General_State = TDA7318_WAIT_INIT;
+volatile TDA7318_Volume_States_Typedef TDA7318_Volume_State = TDA7318_UNMUTE;
+volatile Audio_Switch_States_Typedef Audio_Switch = INPUT_1_SWITCH;
+volatile BT_States_Typedef BT_State = WAIT;
+volatile BT_Values_Typedef BT_Value;
+volatile BT_PowerMode_Typedef BT_PowerMode = OFF;
 volatile uint8_t count;
 extern uint8_t DMA_BUFFER_OBD[DMA_BUFFER_OBD_SIZE];
 extern uint8_t OBD_BUFFER[DMA_BUFFER_OBD_SIZE];
@@ -97,9 +97,8 @@ TnP Temp_Pres;
 //bmp280_params_t BMP280_param;
 volatile uint8_t buf[50];
 
-uint8_t TX_BUFFER[256];
-uint8_t RX_BUFFER[256];
-float Current_Consumption[30];
+
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -241,23 +240,31 @@ void MX_FREERTOS_Init(void) {
 void _SaveReadParameters(void const * argument)
 {
   /* USER CODE BEGIN _SaveReadParameters */
-	W25Q_Read(RX_BUFFER,1);
+	uint16_t Current_page;
+	HAL_PWR_EnableBkUpAccess();
+	Current_page = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR18);
+	uint8_t TX_BUFFER[256];
+	uint8_t RX_BUFFER[256];
+	W25Q_Read(RX_BUFFER,Current_page);
 	ConvertArrayToStruct(RX_BUFFER, &Saved_Parameters);
 	LCD_Brightness(Saved_Parameters.Brightness);
   /* Infinite loop */
   for(;;)
   {
-		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 		ConvertStructToArray(&Saved_Parameters, TX_BUFFER);
-		W25Q_Read(RX_BUFFER,1);
+		W25Q_Read(RX_BUFFER, Current_page);
 		if(memcmp(RX_BUFFER, TX_BUFFER, 256) != 0)
-		{
+		{	
+			Current_page++;
+			if(Current_page >= W25Q_NUMBERS_OF_PAGES)
+			{
+				Current_page = 0;
+			}
 			W25Q_ChipErase();
-			W25Q_Write(TX_BUFFER, 1);
-			HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+			W25Q_Write(TX_BUFFER, Current_page);			
+			HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR18, Current_page);
 		}
-//		ConvertArrayToStruct(RX_BUFFER, &Saved_Parameters);
-    osDelay(50000);
+    osDelay(600000);
   }
   /* USER CODE END _SaveReadParameters */
 }
@@ -356,6 +363,7 @@ void _OBD(void const * argument)
   /* USER CODE BEGIN _OBD */
 	float VSS, MAP, IAT, RPM, LONGFT, SHRTFT, Fb, Ft;
 	uint8_t k = 0;
+	float Current_Consumption[30];
   /* Infinite loop */
   for(;;)
   {		
@@ -428,7 +436,10 @@ void _Audio(void const * argument)
   /* Infinite loop */
   for(;;)
   {	
-		BT_Init();
+		if(BT_General_State != BT_INIT_OK)
+		{
+			BT_Init();
+		}
   }
   /* USER CODE END _Audio */
 }
@@ -446,8 +457,7 @@ void _Touch(void const * argument)
   /* Infinite loop */
   for(;;)
   {		
-		Touch_Update();   
-		
+		Touch_Update();	
   }
   /* USER CODE END _Touch */
 }

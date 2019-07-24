@@ -17,14 +17,34 @@ void TDA7318_SetAttenuation(uint8_t Speaker,uint8_t Value)
 void TDA7318_SetBass(int8_t Bass)
 {
 	uint8_t tx_data = 0;
-	tx_data = TDA7318_SET_BASS|Bass;
-	HAL_I2C_Master_Transmit(&hi2c1, TDA7318_ADDRESS<<1, &tx_data, 1, 100);
+	Bass/=2;
+	if(Bass < 0)
+	{
+		tx_data = Bass&0x07 - 0x01;
+	}
+	else
+	{
+		tx_data = ~Bass;
+	}
+	tx_data &= 0x0F;	
+	tx_data |= TDA7318_SET_BASS;
+	HAL_I2C_Master_Transmit(&hi2c1, TDA7318_ADDRESS<<1, &tx_data, 1, 100);	
 }
 
 void TDA7318_SetTreble(int8_t Treble)
 {
 	uint8_t tx_data = 0;
-	tx_data = TDA7318_SET_TREBLE|Treble;
+	Treble/=2;
+	if(Treble < 0)
+	{
+		tx_data = Treble&0x07 - 0x01;
+	}
+	else
+	{
+		tx_data = ~Treble;
+	}
+	tx_data &= 0x0F;	
+	tx_data |= TDA7318_SET_TREBLE;
 	HAL_I2C_Master_Transmit(&hi2c1, TDA7318_ADDRESS<<1, &tx_data, 1, 100);
 }
 

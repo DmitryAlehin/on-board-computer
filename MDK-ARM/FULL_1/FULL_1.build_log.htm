@@ -32,29 +32,31 @@ compiling freertos.c...
   #endif
 ..\PeriphDrivers\inc\RDA5807m.h(8): warning:  #1-D: last line of file ends without a newline
   #endif
-../Src/freertos.c(374): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+../Src/freertos.c(347): warning:  #167-D: argument of type "volatile BT_Values_Typedef *" is incompatible with parameter of type "BT_Values_Typedef *"
+  					BTCheckState(BT_BUFFER, &BT_Value);	
+../Src/freertos.c(382): warning:  #1035-D: single-precision operand implicitly converted to double-precision
   				Car_Param.FUEL_Liters = Car_Param.FUEL / 100.0 * 55.0;
-../Src/freertos.c(385): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+../Src/freertos.c(393): warning:  #1035-D: single-precision operand implicitly converted to double-precision
   				Fb = (Saved_Parameters.K / 100.0) * (RPM / 60.0) * MAP * 0.8 * 28.98 / (8.31441 * (IAT + 273.15));
-../Src/freertos.c(385): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+../Src/freertos.c(393): warning:  #1035-D: single-precision operand implicitly converted to double-precision
   				Fb = (Saved_Parameters.K / 100.0) * (RPM / 60.0) * MAP * 0.8 * 28.98 / (8.31441 * (IAT + 273.15));
-../Src/freertos.c(386): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+../Src/freertos.c(394): warning:  #1035-D: single-precision operand implicitly converted to double-precision
   				Ft = 1000.0 * (1 + 0.001 * (IAT - 20.0)) * 3600.0 * Fb * 1 + ((SHRTFT + LONGFT) / 100.0) / (14.7 * 750.0);
-../Src/freertos.c(386): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+../Src/freertos.c(394): warning:  #1035-D: single-precision operand implicitly converted to double-precision
   				Ft = 1000.0 * (1 + 0.001 * (IAT - 20.0)) * 3600.0 * Fb * 1 + ((SHRTFT + LONGFT) / 100.0) / (14.7 * 750.0);
-../Src/freertos.c(387): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+../Src/freertos.c(395): warning:  #1035-D: single-precision operand implicitly converted to double-precision
   				Car_Param.Fuel_consumption = Ft / (VSS * 1000000.0);
-../Src/freertos.c(408): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+../Src/freertos.c(416): warning:  #1035-D: single-precision operand implicitly converted to double-precision
   				Saved_Parameters.Average_consumption = Current_Consumption[0]/50.0;
-../Src/freertos.c(469): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+../Src/freertos.c(479): warning:  #1035-D: single-precision operand implicitly converted to double-precision
   	Temp_Pres.Pressure = Temp_Pres.Pressure/133.3224;
-../Src/freertos.c(476): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+../Src/freertos.c(486): warning:  #1035-D: single-precision operand implicitly converted to double-precision
   		Temp_Pres.Pressure = Temp_Pres.Pressure/133.3224;
-../Src/freertos.c: 11 warnings, 0 errors
+../Src/freertos.c: 12 warnings, 0 errors
 linking...
-Program Size: Code=121612 RO-data=57056 RW-data=1568 ZI-data=128528  
+Program Size: Code=121792 RO-data=57056 RW-data=1568 ZI-data=127896  
 FromELF: creating hex file...
-"FULL_1\FULL_1.axf" - 0 Error(s), 11 Warning(s).
+"FULL_1\FULL_1.axf" - 0 Error(s), 12 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -77,7 +79,7 @@ Package Vendor: Keil
 <h2>Collection of Component Files used:</h2>
 
    * Component: ARM::CMSIS:CORE:5.2.0
-Build Time Elapsed:  00:00:15
+Build Time Elapsed:  00:00:14
 </pre>
 </body>
 </html>

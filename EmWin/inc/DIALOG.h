@@ -89,6 +89,7 @@ Purpose     : Dialog box include
 #include "W25Q.h"
 #include "TDA7318.h"
 #include "bmp280.h"
+#include "rtc.h"
 extern RTC_HandleTypeDef hrtc;
 extern CarValues_Typedef Car_Param;
 extern CarParameters_Typedef CarParameters;

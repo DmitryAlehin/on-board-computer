@@ -22,6 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 #define RTC_STATUS_TIME_OK              0xF1D1
+#define RTC_STATUS_REG 									RTC_BKP_DR19
 /* USER CODE END 0 */
 
 RTC_HandleTypeDef hrtc;
@@ -48,7 +49,7 @@ void MX_RTC_Init(void)
 
   /* USER CODE BEGIN Check_RTC_BKUP */
 	HAL_PWR_EnableBkUpAccess();
-	if(HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR19 ) == RTC_STATUS_TIME_OK)
+	if(HAL_RTCEx_BKUPRead(&hrtc, RTC_STATUS_REG ) == RTC_STATUS_TIME_OK)
 	{
 //		if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 59, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
 //		{
@@ -91,7 +92,7 @@ void MX_RTC_Init(void)
 //  {
 //    Error_Handler();
 //  }
-	HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR19, RTC_STATUS_TIME_OK);
+	HAL_RTCEx_BKUPWrite(&hrtc, RTC_STATUS_REG, RTC_STATUS_TIME_OK);
 }
 }
 
@@ -171,6 +172,43 @@ __weak void RTC_WakeupCallback(void) {
 //	/* Clear EXTI line 22 bit */
 //	__HAL_RTC_WAKEUPTIMER_EXTI_CLEAR_FLAG();
 //}
+
+void RTC_Fix_Date(RTC_DateTypeDef *sDate)
+{
+	if(sDate->Date == 0)
+	{
+		sDate->Date = 1;
+	}
+	
+	if(sDate->Date <= 28)
+	{
+		return;
+	}
+	if((sDate->Month == 4) || (sDate->Month == 6)|| (sDate->Month == 9)|| (sDate->Month == 11))
+	{
+		if(sDate->Date > 30)
+		{
+			sDate->Date = 30;
+		}	
+	}
+	else if(sDate->Month == 2)
+	{
+		if((sDate->Year % 4) == 0)
+		{
+			if(sDate->Date > 29)
+			{
+				sDate->Date = 29;
+			}
+		}
+		else
+		{
+			if(sDate->Date > 28)
+			{
+				sDate->Date = 28;
+			}
+		}
+	}
+}
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

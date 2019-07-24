@@ -207,23 +207,23 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		
 		TDA7318_SetVolume(Saved_Parameters.Volume);		
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_0);
-		SLIDER_SetRange(hItem, 0, 15);
-		SLIDER_SetValue(hItem, ~(Saved_Parameters.Bass -16));
+		SLIDER_SetRange(hItem, -14, 14);
+		SLIDER_SetValue(hItem, Saved_Parameters.Bass);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_1);
-		SLIDER_SetRange(hItem, 0, 15);
-		SLIDER_SetValue(hItem, ~(Saved_Parameters.Treble -16));
+		SLIDER_SetRange(hItem, -14, 14);
+		SLIDER_SetValue(hItem, Saved_Parameters.Treble);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_2);
-		SLIDER_SetRange(hItem, 0, 12);
-		SLIDER_SetValue(hItem, ~(Saved_Parameters.FL - 13));
+		SLIDER_SetRange(hItem, 0, 31);
+		SLIDER_SetValue(hItem, Saved_Parameters.FL);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_3);
-		SLIDER_SetRange(hItem, 0, 12);
-		SLIDER_SetValue(hItem, ~(Saved_Parameters.FR - 13));
+		SLIDER_SetRange(hItem, 0, 31);
+		SLIDER_SetValue(hItem, Saved_Parameters.FR);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_4);
-		SLIDER_SetRange(hItem, 0, 12);
-		SLIDER_SetValue(hItem, ~(Saved_Parameters.RL - 13));
+		SLIDER_SetRange(hItem, 0, 31);
+		SLIDER_SetValue(hItem, Saved_Parameters.RL);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_5);
-		SLIDER_SetRange(hItem, 0, 12);
-		SLIDER_SetValue(hItem, ~(Saved_Parameters.RR - 13));
+		SLIDER_SetRange(hItem, 0, 31);
+		SLIDER_SetValue(hItem, Saved_Parameters.RR);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_6);
 		SLIDER_SetRange(hItem, 1, 4);
 		SLIDER_SetValue(hItem, Saved_Parameters.Amplification);
@@ -250,9 +250,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_0);
-				Saved_Parameters.Bass =~ (SLIDER_GetValue(hItem) - 16);
+				Saved_Parameters.Bass = SLIDER_GetValue(hItem);
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
-				sprintf((char *) Data, "Value: %d", Saved_Parameters.Bass);
+				sprintf((char *) Data, "Value: %d", ~(Saved_Parameters.Bass - 1));
 				TEXT_SetText(hItem, (char *)Data);
 				TDA7318_SetBass(Saved_Parameters.Bass);
         // USER END
@@ -275,9 +275,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         // USER START (Optionally insert code for reacting on notification message)
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_1);
 				Saved_Parameters.Treble = SLIDER_GetValue(hItem);
-				Saved_Parameters.Treble =~ (SLIDER_GetValue(hItem) - 16);
+//				Saved_Parameters.Treble =~ (SLIDER_GetValue(hItem) - 16);
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
-				sprintf((char *) Data, "Value: %d", Saved_Parameters.Treble);
+				sprintf((char *) Data, "Value: %d", ~(Saved_Parameters.Treble - 1));
 				TEXT_SetText(hItem, (char *)Data);
 				TDA7318_SetTreble(Saved_Parameters.Treble);
         // USER END
@@ -299,9 +299,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_2);
-				Saved_Parameters.FL =~ (SLIDER_GetValue(hItem) -13);
+				Saved_Parameters.FL = SLIDER_GetValue(hItem);
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
-				sprintf((char *) Data, "Value: %d", Saved_Parameters.FL);
+				sprintf((char *) Data, "Value: %d", ~(Saved_Parameters.FL -32));
 				TEXT_SetText(hItem, (char *)Data);
 				TDA7318_SetAttenuation(TDA7318_SPEAKER_LF, Saved_Parameters.FL);
         // USER END
@@ -323,9 +323,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_3);
-				Saved_Parameters.FR =~ (SLIDER_GetValue(hItem) -13);
+				Saved_Parameters.FR = SLIDER_GetValue(hItem);
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
-				sprintf((char *) Data, "Value: %d", Saved_Parameters.FR);
+				sprintf((char *) Data, "Value: %d", ~(Saved_Parameters.FR -32));
 				TEXT_SetText(hItem, (char *)Data);
 				TDA7318_SetAttenuation(TDA7318_SPEAKER_RF, Saved_Parameters.FR);
         // USER END
@@ -347,9 +347,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_4);
-				Saved_Parameters.RL =~ (SLIDER_GetValue(hItem)-13);
+				Saved_Parameters.RL = SLIDER_GetValue(hItem);
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
-				sprintf((char *) Data, "Value: %d", Saved_Parameters.RL);
+				sprintf((char *) Data, "Value: %d", ~(Saved_Parameters.RL -32));
 				TEXT_SetText(hItem, (char *)Data);
 				TDA7318_SetAttenuation(TDA7318_SPEAKER_LR, Saved_Parameters.RL);
         // USER END
@@ -371,9 +371,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_5);
-				Saved_Parameters.RR =~ (SLIDER_GetValue(hItem)-13);
+				Saved_Parameters.RR = SLIDER_GetValue(hItem);
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
-				sprintf((char *) Data, "Value: %d", Saved_Parameters.RR);
+				sprintf((char *) Data, "Value: %d", ~(Saved_Parameters.RR -32));
 				TEXT_SetText(hItem, (char *)Data);
 				TDA7318_SetAttenuation(TDA7318_SPEAKER_RR, Saved_Parameters.RR);
         // USER END

@@ -29,6 +29,7 @@
 #define W25Q_JEDEC_ID           0x9F
 #define W25Q_READ_PAGE          0x0B
 #define W25Q_PAGE_LEN           256
+#define W25Q_NUMBERS_OF_PAGES   8192
 
 typedef struct
 {

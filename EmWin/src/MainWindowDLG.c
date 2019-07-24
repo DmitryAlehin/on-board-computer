@@ -98,7 +98,6 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
   int     Id;
   // USER START (Optionally insert additional variables)
 	uint8_t Data[20];
-	int retCode;
 	BUTTON_SKINFLEX_PROPS    	Props;
 	SLIDER_SKINFLEX_PROPS  Slider_Props;
 	BUTTON_SetDefaultFont(GUI_FONT_32B_1);
@@ -217,6 +216,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		sprintf((char *)Data, "%02d:%02d", time.Hours, time.Minutes);
 		TEXT_SetText(hItem, (char *)Data);
 		HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
+		RTC_Fix_Date(&date);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
 		sprintf((char *)Data, "%02d.%02d.20%02d", date.Date, date.Month, date.Year);
 		TEXT_SetText(hItem, (char *)Data);
@@ -266,6 +266,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		sprintf((char *)Data, "%02d:%02d", time.Hours, time.Minutes);
 		TEXT_SetText(hItem, (char *)Data);
 		HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
+		RTC_Fix_Date(&date);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
 		sprintf((char *)Data, "%02d.%02d.20%02d", date.Date, date.Month, date.Year);
 		TEXT_SetText(hItem, (char *)Data);
