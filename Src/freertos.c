@@ -69,11 +69,11 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-GUI_PID_STATE TS_State;
+//GUI_PID_STATE TS_State;
 WM_MESSAGE msg;
 
 volatile OBD_General_States_Typedef OBD_General_State = NOP;
-CarParameters_Typedef CarParameters;
+
 volatile OBD_Sign_States_Typedef OBD_Sign_State = OBD_OK;
 volatile OBD_Data_States_Typedef OBD_Data_State = WAIT_DATA;
 volatile OBD_Average_Cons_States_Typedef OBD_Average_Cons_State = CONSUMPTION_WAIT_RECEIVE;
@@ -82,21 +82,24 @@ volatile TDA7318_States_Typedef TDA7318_General_State = TDA7318_WAIT_INIT;
 volatile TDA7318_Volume_States_Typedef TDA7318_Volume_State = TDA7318_UNMUTE;
 volatile Audio_Switch_States_Typedef Audio_Switch = INPUT_1_SWITCH;
 volatile BT_States_Typedef BT_State = WAIT;
-volatile BT_Values_Typedef BT_Value;
+BT_Values_Typedef BT_Value;
 volatile BT_PowerMode_Typedef BT_PowerMode = OFF;
-volatile uint8_t count;
+volatile RDA5807M_States_Typedef RDA5807M_States = RDA5807M_WAIT_INIT;
+volatile RDA5807M_Update_States_Typedef RDA5807M_Update_States = RDA5807M_RSSI_WAIT;
+volatile RDA5807M_PowerMode_Typedef RDA5807M_PowerMode = RDA5807M_OFF;
 extern uint8_t DMA_BUFFER_OBD[DMA_BUFFER_OBD_SIZE];
 extern uint8_t OBD_BUFFER[DMA_BUFFER_OBD_SIZE];
 extern uint8_t DMA_BUFFER_BT[DMA_BUFFER_BT_SIZE];
 extern uint8_t BT_BUFFER[DMA_BUFFER_BT_SIZE];
 CarValues_Typedef Car_Param;
+CarParameters_Typedef CarParameters;
 Saved_parameters_Typedef Saved_Parameters;
+RDA5807M_Data_Typedef RDA5807M_Data;
 extern GUIHandles GuiHandles;
 BMP280_HandleTypedef BMP280;
 TnP Temp_Pres;
-//bmp280_params_t BMP280_param;
-volatile uint8_t buf[50];
-
+uint8_t  count;
+float Frequency;
 
 
 /* USER CODE END PTD */
@@ -168,7 +171,7 @@ void MX_FREERTOS_Init(void) {
 //	BMP280.addr = BMP280_I2C_ADDRESS_0;
 //	bmp280_init_default_params(&BMP280_param);
 //	HAL_GPIO_WritePin(RADIO_EN_GPIO_Port, RADIO_EN_Pin, GPIO_PIN_SET);
-	
+	HAL_GPIO_WritePin(RADIO_BMP280_EN_GPIO_Port, RADIO_BMP280_EN_Pin, GPIO_PIN_SET);	
 //		Saved_Parameters.key = 41312;		
 //	OBD_General_State = NOP;
 //	W25Q_Read(RX_BUFFER,1);
@@ -242,11 +245,15 @@ void _SaveReadParameters(void const * argument)
   /* USER CODE BEGIN _SaveReadParameters */
 	uint16_t Current_page;
 	HAL_PWR_EnableBkUpAccess();
-	Current_page = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR18);
+	Current_page = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR18);	
 	uint8_t TX_BUFFER[256];
 	uint8_t RX_BUFFER[256];
 	W25Q_Read(RX_BUFFER,Current_page);
 	ConvertArrayToStruct(RX_BUFFER, &Saved_Parameters);
+	if(Saved_Parameters.Volume == 0xFF)
+	{
+		LoadDefaultParameters(&Saved_Parameters);
+	}
 	LCD_Brightness(Saved_Parameters.Brightness);
   /* Infinite loop */
   for(;;)
@@ -312,7 +319,10 @@ void _GUI(void const * argument)
 				WM_SendMessage(GuiHandles.hMainWindow, &msg);
 				break;
 			case WM_AUX:
-				WM_SendMessage(GuiHandles.hMainWindow, &msg);
+				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
+				break;
+			case WM_RADIO:
+				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
 				break;
 		}
 		
@@ -363,7 +373,7 @@ void _OBD(void const * argument)
   /* USER CODE BEGIN _OBD */
 	float VSS, MAP, IAT, RPM, LONGFT, SHRTFT, Fb, Ft;
 	uint8_t k = 0;
-	float Current_Consumption[30];
+	float Current_Consumption[NUMBER_OF_MEASUREMENTS];
   /* Infinite loop */
   for(;;)
   {		
@@ -398,7 +408,7 @@ void _OBD(void const * argument)
 				{
 				Current_Consumption[k] = Car_Param.Fuel_consumption;
 				k++;
-				if(k == 50)
+				if(k == NUMBER_OF_MEASUREMENTS)
 				{
 					OBD_Average_Cons_State = CONSUMPTION_RECEIVE;
 					k = 0;
@@ -409,11 +419,11 @@ void _OBD(void const * argument)
 			}
 			if(OBD_Average_Cons_State == CONSUMPTION_RECEIVE)
 			{
-				for(uint8_t i = 0; i < 50; i++)
+				for(uint8_t i = 0; i < NUMBER_OF_MEASUREMENTS; i++)
 				{
 					Current_Consumption[0] += Current_Consumption[i];
 				}
-				Saved_Parameters.Average_consumption = Current_Consumption[0]/50.0;
+				Saved_Parameters.Average_consumption = Current_Consumption[0]/(float)NUMBER_OF_MEASUREMENTS;
 				OBD_Average_Cons_State = CONSUMPTION_WAIT_RECEIVE;
 			}
 		}
@@ -440,6 +450,21 @@ void _Audio(void const * argument)
 		{
 			BT_Init();
 		}
+		if(RDA5807M_States == RDA5807M_WAIT_INIT)
+		{
+			osDelay(100);
+			RDA5807M_Init();
+			RDA5807M_States = RDA5807M_INIT_OK;
+		}
+		if(RDA5807M_Update_States == RDA5807M_RSSI_WAIT)
+		{
+			RDA5807M_Data.RSSI = RDA5807M_GetRSSI();
+			RDA5807M_Data.Frequency = RDA5807M_GetFrequency();
+			RDA5807M_GetRDS(&RDA5807M_Data);				
+			RDA5807M_Update_States = RDA5807M_RSSI_UPDATE;
+			msg.MsgId = WM_RADIO;
+		}
+
   }
   /* USER CODE END _Audio */
 }
@@ -472,18 +497,18 @@ void _Touch(void const * argument)
 void _Meteo(void const * argument)
 {
   /* USER CODE BEGIN _Meteo */
-	HAL_GPIO_WritePin(RADIO_BMP280_EN_GPIO_Port, RADIO_BMP280_EN_Pin, GPIO_PIN_SET);	
+	
 	BMP280.addr = BMP280_I2C_ADDRESS_0;	
 	bmp280_init(&BMP280);
 	bmp280_read_float(&BMP280, &Temp_Pres.Temperature, &Temp_Pres.Pressure);
-	Temp_Pres.Pressure = Temp_Pres.Pressure/133.3224;
+	Temp_Pres.Pressure = Temp_Pres.Pressure/(float)133.3224;
   /* Infinite loop */
   for(;;)
   {
     if(Saved_Parameters.Temperature_mode)
 		{				
 		bmp280_read_float(&BMP280, &Temp_Pres.Temperature, &Temp_Pres.Pressure);
-		Temp_Pres.Pressure = Temp_Pres.Pressure/133.3224;
+		Temp_Pres.Pressure = Temp_Pres.Pressure/(float)133.3224;
 		msg.MsgId = WM_UPDATE_METEO;
 		}
 		osDelay(5000);

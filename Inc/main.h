@@ -110,6 +110,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 #define DMA_BUFFER_OBD_SIZE 30
 #define DMA_BUFFER_BT_SIZE 15
+#define NUMBER_OF_MEASUREMENTS 19
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

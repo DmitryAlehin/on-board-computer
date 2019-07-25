@@ -297,6 +297,7 @@ typedef struct {
 #define WM_UPDATE_BT_POWERMODE      0x0405	/* Update bluetooth power mode states*/
 #define WM_UPDATE_METEO             0x0406
 #define WM_AUX             					0x0407
+#define WM_RADIO             				0x0408
 /*********************************************************************
 *
 *       Motion messages

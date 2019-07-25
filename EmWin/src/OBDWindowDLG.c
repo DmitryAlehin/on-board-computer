@@ -90,7 +90,6 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
   int     Id;
   // USER START (Optionally insert additional variables)
 	uint8_t Data[20];
-	int retCode;
   // USER END
 
   switch (pMsg->MsgId) {

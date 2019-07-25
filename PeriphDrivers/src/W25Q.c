@@ -137,3 +137,20 @@ void ConvertArrayToStruct( uint8_t *Array, Saved_parameters_Typedef *Struct)
 	Struct->Average_consumption = Float_to_int.Float_value;
 	Struct->key = Array[18] || (Array[19] <<8) || (Array[20] <<16) || (Array[21] <<24);
 }
+
+void LoadDefaultParameters(Saved_parameters_Typedef *Struct)
+{
+	Struct->Amplification = 4;
+	Struct->Bass = 0;
+	Struct->Brightness = 127;
+	Struct->FL = 0;
+	Struct->FR = 0;
+	Struct->K = 60;
+	Struct->OBD_mode = 1;
+	Struct->RL = 0;
+	Struct->RR = 0;
+	Struct->Temperature_mode = 1;
+	Struct->Treble = 0;
+	Struct->Volume = 48;
+	Struct->Consumption_mode = 0;
+}

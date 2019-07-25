@@ -58,4 +58,5 @@ void w25q_SetBlockProtect(uint8_t protect);
 void w25q_WaitForReady(void);
 void ConvertStructToArray(Saved_parameters_Typedef *Struct, uint8_t *Array);
 void ConvertArrayToStruct( uint8_t *Array, Saved_parameters_Typedef *Struct);
+void LoadDefaultParameters(Saved_parameters_Typedef *Struct);
 #endif

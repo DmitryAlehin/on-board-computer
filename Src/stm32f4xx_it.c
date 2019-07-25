@@ -42,6 +42,7 @@
 #include "TouchPanel.h"
 #include "GUI.h"
 #include "OBDII.h"
+#include "RDA5807m.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,6 +52,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 extern OBD_Data_States_Typedef OBD_Data_State;
+extern RDA5807M_Update_States_Typedef RDA5807M_Update_States;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -347,6 +349,10 @@ void TIM7_IRQHandler(void)
 	if ((htim7.Instance == TIM7) && (OBD_Data_State == CALCULATE_END)) 
 	{				
     OBD_Data_State = READY_TO_RECEIVE;
+  }
+	if ((htim7.Instance == TIM7) && (RDA5807M_Update_States == RDA5807M_RSSI_UPDATE)) 
+	{				
+    RDA5807M_Update_States = RDA5807M_RSSI_WAIT;
   }
   /* USER CODE END TIM7_IRQn 0 */
   HAL_TIM_IRQHandler(&htim7);

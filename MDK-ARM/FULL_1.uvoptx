@@ -290,6 +290,26 @@
           <WinNumber>1</WinNumber>
           <ItemText>Audio_Switch</ItemText>
         </Ww>
+        <Ww>
+          <count>28</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>RDA5807_States</ItemText>
+        </Ww>
+        <Ww>
+          <count>29</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Frequency,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>30</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>RDA5807M_Data</ItemText>
+        </Ww>
+        <Ww>
+          <count>31</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>RDA5807M_Update_States</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
