@@ -171,7 +171,8 @@ void MX_FREERTOS_Init(void) {
 //	BMP280.addr = BMP280_I2C_ADDRESS_0;
 //	bmp280_init_default_params(&BMP280_param);
 //	HAL_GPIO_WritePin(RADIO_EN_GPIO_Port, RADIO_EN_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(RADIO_BMP280_EN_GPIO_Port, RADIO_BMP280_EN_Pin, GPIO_PIN_SET);	
+	HAL_GPIO_WritePin(RADIO_BMP280_EN_GPIO_Port, RADIO_BMP280_EN_Pin, GPIO_PIN_SET);
+//	TDA7318_SelectInput(Audio_Switch);
 //		Saved_Parameters.key = 41312;		
 //	OBD_General_State = NOP;
 //	W25Q_Read(RX_BUFFER,1);
@@ -312,15 +313,15 @@ void _GUI(void const * argument)
 			case WM_UPDATE_BT:
 				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
 				break;
-			case WM_UPDATE_BT_POWERMODE:
-				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
-				break;
+//			case WM_UPDATE_BT_POWERMODE:
+//				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
+//				break;
 			case WM_UPDATE_METEO:
 				WM_SendMessage(GuiHandles.hMainWindow, &msg);
 				break;
-			case WM_AUX:
-				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
-				break;
+//			case WM_AUX:
+//				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
+//				break;
 			case WM_RADIO:
 				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
 				break;
@@ -378,7 +379,11 @@ void _OBD(void const * argument)
   for(;;)
   {		
 		if(Saved_Parameters.OBD_mode)
-		{			
+		{	
+			if(OBD_General_State != OBD_INIT)
+			{
+				HAL_GPIO_WritePin(OBDII_EN_GPIO_Port, OBDII_EN_Pin, GPIO_PIN_SET);
+			}
 			OBD_Init();		
 			if(OBD_General_State == OBD_INIT)
 			{	
@@ -387,22 +392,22 @@ void _OBD(void const * argument)
 			if(OBD_Data_State == COMPLETE_ALL_DATA)
 			{			
 				Car_Param.Voltage = CarParameters.Voltage;
-				Car_Param.ECT = CarParameters.ECT - 40.0;
-				Car_Param.FUEL = ((CarParameters.FUEL) * 100.0) / 255.0;
-				Car_Param.FUEL_Liters = Car_Param.FUEL / 100.0 * 55.0;
+				Car_Param.ECT = CarParameters.ECT - 40.0f;
+				Car_Param.FUEL = ((CarParameters.FUEL) * 100.0f) / 255.0f;
+				Car_Param.FUEL_Liters = Car_Param.FUEL / 100.0f * 55.0f;
 				VSS = CarParameters.VSS;
 				if(VSS <= 0)
 				{
 					VSS = 1;
 				}
-				IAT = CarParameters.IAT - 40.0;
-				LONGFT = ((CarParameters.LONGFT - 128.0) * 100.0) / 128.0;
-				SHRTFT = ((CarParameters.SHRTFT - 128.0) * 100.0) / 128.0;
+				IAT = CarParameters.IAT - 40.0f;
+				LONGFT = ((CarParameters.LONGFT - 128.0f) * 100.0f) / 128.0f;
+				SHRTFT = ((CarParameters.SHRTFT - 128.0f) * 100.0f) / 128.0f;
 				MAP = CarParameters.MAP;
-				RPM = (CarParameters.RPM_A * 256.0 + CarParameters.RPM_B)/4;
-				Fb = (Saved_Parameters.K / 100.0) * (RPM / 60.0) * MAP * 0.8 * 28.98 / (8.31441 * (IAT + 273.15));
-				Ft = 1000.0 * (1 + 0.001 * (IAT - 20.0)) * 3600.0 * Fb * 1 + ((SHRTFT + LONGFT) / 100.0) / (14.7 * 750.0);
-				Car_Param.Fuel_consumption = Ft / (VSS * 1000000.0);
+				RPM = (CarParameters.RPM_A * 256.0f + CarParameters.RPM_B)/4.0f;
+				Fb = (Saved_Parameters.K / 100.0f) * (RPM / 60.0f) * MAP * 0.8f * 28.98f / (8.31441f * (IAT + 273.15f));
+				Ft = 1000.0f * (1.0f + 0.001f * (IAT - 20.0f)) * 3600.0f * Fb * 1.0f + ((SHRTFT + LONGFT) / 100.0f) / (14.7f * 750.0f);
+				Car_Param.Fuel_consumption = Ft / (VSS * 1000000.0f);
 				Car_Param.LH_consumption = Ft;
 				if(OBD_Average_Cons_State == CONSUMPTION_WAIT_RECEIVE)
 				{
@@ -428,6 +433,10 @@ void _OBD(void const * argument)
 			}
 		}
 	}
+		else if(!Saved_Parameters.OBD_mode)
+		{
+			HAL_GPIO_WritePin(OBDII_EN_GPIO_Port, OBDII_EN_Pin, GPIO_PIN_RESET);
+		}
 }
   
   /* USER CODE END _OBD */
@@ -456,13 +465,16 @@ void _Audio(void const * argument)
 			RDA5807M_Init();
 			RDA5807M_States = RDA5807M_INIT_OK;
 		}
-		if(RDA5807M_Update_States == RDA5807M_RSSI_WAIT)
+		if(Audio_Switch == RADIO_SWITCH)
 		{
-			RDA5807M_Data.RSSI = RDA5807M_GetRSSI();
-			RDA5807M_Data.Frequency = RDA5807M_GetFrequency();
-			RDA5807M_GetRDS(&RDA5807M_Data);				
-			RDA5807M_Update_States = RDA5807M_RSSI_UPDATE;
-			msg.MsgId = WM_RADIO;
+			if(RDA5807M_Update_States == RDA5807M_RSSI_WAIT)
+			{
+				RDA5807M_Data.RSSI = RDA5807M_GetRSSI();
+				RDA5807M_Data.Frequency = RDA5807M_GetFrequency();
+				RDA5807M_GetRDS(&RDA5807M_Data);				
+				RDA5807M_Update_States = RDA5807M_RSSI_UPDATE;
+				msg.MsgId = WM_RADIO;
+			}
 		}
 
   }

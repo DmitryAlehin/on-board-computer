@@ -140,12 +140,11 @@ typedef struct
 }RDA5807M_Data_Typedef;
 
 void RDA5807M_Init(void);
-//void RDA5807M_SetVolume(uint8_t Volume);
-//void RDA5807M_SetBass(uint8_t Bass);
 void RDA5807M_SetFrequency(float Freq);
 void RDA5807M_SeekUp(void);
 void RDA5807M_SeekDown(void);
 uint8_t RDA5807M_GetRSSI(void);
 void RDA5807M_GetRDS(RDA5807M_Data_Typedef *Struct);
 float RDA5807M_GetFrequency(void);
+
 #endif

@@ -120,8 +120,6 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
   int     Id;
   // USER START (Optionally insert additional variables)
 	uint8_t Data[20];
-	int retCode;
-	SLIDER_SKINFLEX_PROPS  Slider_Props;
 	
 	
   // USER END
@@ -277,7 +275,33 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				BUTTON_SetFont(hItem, GUI_FONT_32B_1);
 				BUTTON_SetFocussable(hItem, 0);
 			}
-			
+		switch(Audio_Switch)
+		{
+			case INPUT_1_SWITCH:
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+				TEXT_SetText(hItem, "Music player");
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);			
+				TEXT_SetText(hItem, "");
+				break;
+			case RADIO_SWITCH:
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+				TEXT_SetText(hItem, "RADIO");
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);			
+				TEXT_SetText(hItem, "");
+				break;
+			case BT_SWITCH:
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+				TEXT_SetText(hItem, "Bluetooth");
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);			
+				TEXT_SetText(hItem, "");
+				break;
+			case AUX_SWITCH:
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+				TEXT_SetText(hItem, "AUX");
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);			
+				TEXT_SetText(hItem, "");
+				break;
+		}	
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
 		sprintf((char *) Data, "VOLUME: %d", Saved_Parameters.Volume);
 		TEXT_SetText(hItem, (char *)Data);
@@ -394,8 +418,12 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				case BT_SWITCH:
 					hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
 					TEXT_SetText(hItem, "Bluetooth");
-					hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);			
-					TEXT_SetText(hItem, "");
+					if(BT_General_State == BT_INIT_OK)
+					{
+						hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);
+						sprintf((char *)Data, "Name:%s\r\nPIN:%s", BT_Value.BT_NAME, BT_Value.PIN);
+						TEXT_SetText(hItem, (char *)Data);
+					}
 					break;
 				case AUX_SWITCH:
 					hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
@@ -442,26 +470,26 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		}
 		pMsg->MsgId = 0;
 		break;
-	case WM_UPDATE_BT_POWERMODE:
-		if(BT_PowerMode == OFF)
-		{
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-			TEXT_SetText(hItem, "Music player");
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);			
-			TEXT_SetText(hItem, "");			
-		}
-		else if(BT_PowerMode == ON)
-		{
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-			TEXT_SetText(hItem, "Bluetooth");
-		}
-		pMsg->MsgId = 0;
-		break;
-	case WM_AUX:
-		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-		TEXT_SetText(hItem, "AUX");
-		pMsg->MsgId = 0;
-		break;
+//	case WM_UPDATE_BT_POWERMODE:
+//		if(BT_PowerMode == OFF)
+//		{
+//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+//			TEXT_SetText(hItem, "Music player");
+//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);			
+//			TEXT_SetText(hItem, "");			
+//		}
+//		else if(BT_PowerMode == ON)
+//		{
+//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+//			TEXT_SetText(hItem, "Bluetooth");
+//		}
+//		pMsg->MsgId = 0;
+//		break;
+//	case WM_AUX:
+//		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+//		TEXT_SetText(hItem, "AUX");
+//		pMsg->MsgId = 0;
+//		break;
 	case WM_RADIO:
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
 		sprintf((char *)Data, "RADIO Freq %.2f", RDA5807M_Data.Frequency);
@@ -496,8 +524,16 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-				TDA7318_SelectInput(AUX_SWITCH);
-				Audio_Switch = AUX_SWITCH;
+				if(Audio_Switch != AUX_SWITCH)
+				{
+					Audio_Switch = AUX_SWITCH;	
+					TDA7318_SelectInput(Audio_Switch);
+				}		
+				else
+				{
+					Audio_Switch = INPUT_1_SWITCH;	
+					TDA7318_SelectInput(Audio_Switch);
+				}
 				msg.MsgId = WM_UPDATE_AUDIO;
         // USER END
         break;
@@ -542,21 +578,31 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				if(BT_PowerMode == OFF)
 				{					
 					HAL_GPIO_WritePin(BT_EN_GPIO_Port, BT_EN_Pin, GPIO_PIN_SET);					
-					Audio_Switch = BT_SWITCH;
-					TDA7318_SelectInput(Audio_Switch);
 					BT_PowerMode = ON;
-//					msg.MsgId = WM_UPDATE_BT_POWERMODE;
-					msg.MsgId = WM_UPDATE_AUDIO;
 				}
 				else if(BT_PowerMode == ON)
-				{					
-//					HAL_GPIO_WritePin(BT_EN_GPIO_Port, BT_EN_Pin, GPIO_PIN_RESET);					
+				{
+					BT_PowerMode = OFF;
+				}
+				if(Audio_Switch != BT_SWITCH)
+				{
+					Audio_Switch = BT_SWITCH;
+					TDA7318_SelectInput(Audio_Switch);
+//					msg.MsgId = WM_UPDATE_BT_POWERMODE;
+				}
+				else
+				{
 					Audio_Switch = INPUT_1_SWITCH;
 					TDA7318_SelectInput(Audio_Switch);
-					BT_PowerMode = OFF;
-//					msg.MsgId = WM_UPDATE_BT_POWERMODE;
-					msg.MsgId = WM_UPDATE_AUDIO;
 				}
+					msg.MsgId = WM_UPDATE_AUDIO;
+								
+//					HAL_GPIO_WritePin(BT_EN_GPIO_Port, BT_EN_Pin, GPIO_PIN_RESET);					
+					
+					
+//					msg.MsgId = WM_UPDATE_BT_POWERMODE;
+//					msg.MsgId = WM_UPDATE_AUDIO;
+				
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)

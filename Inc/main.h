@@ -61,6 +61,7 @@ extern "C" {
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal.h"
 #include "stdio.h"
+#include <string.h> 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -91,7 +92,7 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define BT_EN_Pin GPIO_PIN_2
 #define BT_EN_GPIO_Port GPIOE
-#define OBDII_EN_Pin GPIO_PIN_3
+#define OBDII_EN_Pin GPIO_PIN_5
 #define OBDII_EN_GPIO_Port GPIOE
 #define TDA7318_EN_Pin GPIO_PIN_4
 #define TDA7318_EN_GPIO_Port GPIOE

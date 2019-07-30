@@ -43,6 +43,7 @@
 #include "GUI.h"
 #include "OBDII.h"
 #include "RDA5807m.h"
+#include "freertos.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -383,10 +384,10 @@ void DMA2_Stream2_IRQHandler(void)
 			/* Clear the transfer complete flag */
 			regs->IFCR = DMA_FLAG_TCIF0_4 << hdma_usart1_rx.StreamIndex;
 			memcpy(&OBD_BUFFER, &DMA_BUFFER_OBD, DMA_BUFFER_OBD_SIZE);   /* Copy first part */
-			for(uint8_t i=0; i<DMA_BUFFER_OBD_SIZE; i++)
-			{
-				DMA_BUFFER_OBD[i] = 0;
-			}
+//			for(uint8_t i=0; i<DMA_BUFFER_OBD_SIZE; i++)
+//			{
+//				DMA_BUFFER_OBD[i] = 0;
+//			}
 		  xHigherPriorityTaskWoken = pdFALSE;					
 			xQueueSendFromISR(QueueODBFromISR, &OBD_BUFFER, &xHigherPriorityTaskWoken);				
 			regs->IFCR = 0x3FU << hdma_usart1_rx.StreamIndex; // clear all interrupts

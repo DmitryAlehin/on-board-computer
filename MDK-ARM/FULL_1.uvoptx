@@ -310,6 +310,21 @@
           <WinNumber>1</WinNumber>
           <ItemText>RDA5807M_Update_States</ItemText>
         </Ww>
+        <Ww>
+          <count>32</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>OBD_BUFFER</ItemText>
+        </Ww>
+        <Ww>
+          <count>33</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>time</ItemText>
+        </Ww>
+        <Ww>
+          <count>34</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>date</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>

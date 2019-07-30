@@ -96,44 +96,44 @@ void MX_RTC_Init(void)
 }
 }
 
-//void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
-//{
+void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
+{
 
-//  if(rtcHandle->Instance==RTC)
-//  {
-//  /* USER CODE BEGIN RTC_MspInit 0 */
-////		
-//  /* USER CODE END RTC_MspInit 0 */
-//    /* RTC clock enable */
-//    __HAL_RCC_RTC_ENABLE();
+  if(rtcHandle->Instance==RTC)
+  {
+  /* USER CODE BEGIN RTC_MspInit 0 */
+//		
+  /* USER CODE END RTC_MspInit 0 */
+    /* RTC clock enable */
+    __HAL_RCC_RTC_ENABLE();
 
-//    /* RTC interrupt Init */
-//    HAL_NVIC_SetPriority(RTC_WKUP_IRQn, 5, 0);
-//    HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
-//  /* USER CODE BEGIN RTC_MspInit 1 */
+    /* RTC interrupt Init */
+    HAL_NVIC_SetPriority(RTC_WKUP_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
+  /* USER CODE BEGIN RTC_MspInit 1 */
 
-//  /* USER CODE END RTC_MspInit 1 */
-//  }
-//}
+  /* USER CODE END RTC_MspInit 1 */
+  }
+}
 
-//void HAL_RTC_MspDeInit(RTC_HandleTypeDef* rtcHandle)
-//{
+void HAL_RTC_MspDeInit(RTC_HandleTypeDef* rtcHandle)
+{
 
-//  if(rtcHandle->Instance==RTC)
-//  {
-//  /* USER CODE BEGIN RTC_MspDeInit 0 */
-////	
-//  /* USER CODE END RTC_MspDeInit 0 */
-//    /* Peripheral clock disable */
-//    __HAL_RCC_RTC_DISABLE();
+  if(rtcHandle->Instance==RTC)
+  {
+  /* USER CODE BEGIN RTC_MspDeInit 0 */
+//	
+  /* USER CODE END RTC_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_RTC_DISABLE();
 
-//    /* RTC interrupt Deinit */
-//    HAL_NVIC_DisableIRQ(RTC_WKUP_IRQn);
-//  /* USER CODE BEGIN RTC_MspDeInit 1 */
+    /* RTC interrupt Deinit */
+    HAL_NVIC_DisableIRQ(RTC_WKUP_IRQn);
+  /* USER CODE BEGIN RTC_MspDeInit 1 */
 
-//  /* USER CODE END RTC_MspDeInit 1 */
-//  }
-//} 
+  /* USER CODE END RTC_MspDeInit 1 */
+  }
+} 
 
 /* USER CODE BEGIN 1 */
 void RTC_Interrupt(void)
@@ -155,7 +155,8 @@ void RTC_Interrupt(void)
 	HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
 }
 
-__weak void RTC_WakeupCallback(void) {
+__weak void RTC_WakeupCallback(void) 
+{
 	/* If user needs this function, then they should be defined separatelly in your project */
 }
 

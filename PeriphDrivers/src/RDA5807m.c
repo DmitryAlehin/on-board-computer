@@ -57,7 +57,7 @@ float RDA5807M_GetFrequency(void)
 	HAL_I2C_Master_Receive(&hi2c1, RDA5807M_ADDRESS<<1, rx_data, 2, 100);
 	value = rx_data[0] << 8;
 	value |= rx_data[1];
-	return (0.1 * (value & RDA5807M_READCHAN_MASK)) + 87.5;
+	return (0.1f * (value & RDA5807M_READCHAN_MASK)) + 87.5f;
 }
 
 void RDA5807M_SetFrequency(float Freq)
@@ -65,7 +65,7 @@ void RDA5807M_SetFrequency(float Freq)
 	uint8_t tx_data[2];
 	uint16_t value = 0;
 	uint16_t Channel;
-	Channel = (Freq - 87.5)/0.1;
+	Channel = (Freq - 87.5f)/0.1f;
 	value =  RDA5807M_CHAN_MASK  | RDA5807M_FLG_TUNE | (Channel << RDA5807M_CHAN_SHIFT);
 	tx_data[0] = value >> 8;
 	tx_data[1] = value;

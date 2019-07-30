@@ -247,7 +247,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 			TEXT_SetText(hItem, (char *)Data);
 		}
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_6);
-		if(Car_Param.ECT >108.0)
+		if(Car_Param.ECT >108.0f)
 		{			
 			sprintf((char *)Data, "%.1f %cC", Car_Param.ECT, 176);
 			TEXT_SetText(hItem, (char *)Data);
@@ -301,7 +301,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 			TEXT_SetText(hItem, (char *)Data);
 		}
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_6);
-		if(Car_Param.ECT >108.0)
+		if(Car_Param.ECT >108.0f)
 		{			
 			sprintf((char *)Data, "%.1f %cC", Car_Param.ECT, 176);
 			TEXT_SetText(hItem, (char *)Data);
@@ -315,15 +315,15 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 	case WM_UPDATE_METEO:		
 		//вывод температуры
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
-		if((Temp_Pres.Temperature >= 22.0) &&(Temp_Pres.Temperature <= 25.0))
+		if((Temp_Pres.Temperature >= 22.0f) &&(Temp_Pres.Temperature <= 25.0f))
 		{
 			TEXT_SetTextColor(hItem, GUI_DARKGREEN);
 		}
-		if(Temp_Pres.Temperature > 25.0)
+		if(Temp_Pres.Temperature > 25.0f)
 		{
 			TEXT_SetTextColor(hItem, GUI_RED_COLOR);
 		}
-		if(Temp_Pres.Temperature < 22.0)
+		if(Temp_Pres.Temperature < 22.0f)
 		{
 			TEXT_SetTextColor(hItem, GUI_BLUE);
 		}
