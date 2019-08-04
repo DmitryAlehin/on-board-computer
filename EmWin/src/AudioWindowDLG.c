@@ -314,7 +314,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		sprintf((char *)Data, "%.1f L/100km", Car_Param.Fuel_consumption);
 		TEXT_SetText(hItem, (char *)Data);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
-		sprintf((char *)Data, "%.1f V", Car_Param.Voltage);
+		sprintf((char *)Data, "%.1f V", CarParameters.Voltage);
 		TEXT_SetText(hItem, (char *)Data);
 			
 		if(BT_General_State == BT_INIT_OK)
@@ -323,32 +323,59 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 			sprintf((char *)Data, "Name:%s\r\nPIN:%s", BT_Value.BT_NAME, BT_Value.PIN);
 			TEXT_SetText(hItem, (char *)Data);
 		}
-		if(BT_State == BT_CONNECTED)
+		switch(BT_State)
 		{
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-			TEXT_SetText(hItem, "Bluetooth connected");
-			TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
+			case BT_CONNECTED:
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+				TEXT_SetText(hItem, "Bluetooth connected");
+				TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
+				break;
+			case BT_DISCONNECTED:
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+				TEXT_SetText(hItem, "Bluetooth disconnected");
+				TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
+				break;
+			case BT_PLAY:
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
+				sprintf((char *)Data, "%c%c", 108, 108);
+				BUTTON_SetText(hItem, (char *)Data);
+				BUTTON_SetFocussable(hItem, 0);
+				break;
+			case BT_PAUSE:
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
+				sprintf((char *)Data, "%c", 13);
+				BUTTON_SetText(hItem, (char *)Data);
+				BUTTON_SetFocussable(hItem, 0);		
+				break;
+			case WAIT:	
+				break;
 		}
-		if(BT_State == BT_DISCONNECTED)
-		{
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-			TEXT_SetText(hItem, "Bluetooth disconnected");
-			TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
-		}
-		if(BT_State == BT_PLAY)
-		{
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
-			sprintf((char *)Data, "%c%c", 108, 108);
-			BUTTON_SetText(hItem, (char *)Data);
-			BUTTON_SetFocussable(hItem, 0);
-		}
-		if(BT_State == BT_PAUSE)
-		{
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
-			sprintf((char *)Data, "%c", 13);
-			BUTTON_SetText(hItem, (char *)Data);
-			BUTTON_SetFocussable(hItem, 0);			
-		}
+//		if(BT_State == BT_CONNECTED)
+//		{
+//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+//			TEXT_SetText(hItem, "Bluetooth connected");
+//			TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
+//		}
+//		if(BT_State == BT_DISCONNECTED)
+//		{
+//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+//			TEXT_SetText(hItem, "Bluetooth disconnected");
+//			TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
+//		}
+//		if(BT_State == BT_PLAY)
+//		{
+//			hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
+//			sprintf((char *)Data, "%c%c", 108, 108);
+//			BUTTON_SetText(hItem, (char *)Data);
+//			BUTTON_SetFocussable(hItem, 0);
+//		}
+//		if(BT_State == BT_PAUSE)
+//		{
+//			hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
+//			sprintf((char *)Data, "%c", 13);
+//			BUTTON_SetText(hItem, (char *)Data);
+//			BUTTON_SetFocussable(hItem, 0);			
+//		}
 		if(BT_PowerMode == OFF)
 		{
 			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
@@ -380,7 +407,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 			sprintf((char *)Data, "%.1f L/100km", Car_Param.Fuel_consumption);
 			TEXT_SetText(hItem, (char *)Data);
 			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
-			sprintf((char *)Data, "%.1f V", Car_Param.Voltage);
+			sprintf((char *)Data, "%.1f V", CarParameters.Voltage);
 			TEXT_SetText(hItem, (char *)Data);
 			pMsg->MsgId = 0;
 			break;		

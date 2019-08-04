@@ -65,6 +65,7 @@
 #include "bmp280.h"
 #include "TDA7318.h"
 #include "RDA5807m.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -77,6 +78,7 @@ volatile OBD_General_States_Typedef OBD_General_State = NOP;
 volatile OBD_Sign_States_Typedef OBD_Sign_State = OBD_OK;
 volatile OBD_Data_States_Typedef OBD_Data_State = WAIT_DATA;
 volatile OBD_Average_Cons_States_Typedef OBD_Average_Cons_State = CONSUMPTION_WAIT_RECEIVE;
+volatile OBD_Errors_State_Typedef OBD_Errors_State = WAIT_ERROR;
 volatile BT_General_States_Typedef BT_General_State = WAIT_BT_INIT;
 volatile TDA7318_States_Typedef TDA7318_General_State = TDA7318_WAIT_INIT;
 volatile TDA7318_Volume_States_Typedef TDA7318_Volume_State = TDA7318_UNMUTE;
@@ -172,6 +174,11 @@ void MX_FREERTOS_Init(void) {
 //	bmp280_init_default_params(&BMP280_param);
 //	HAL_GPIO_WritePin(RADIO_EN_GPIO_Port, RADIO_EN_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(RADIO_BMP280_EN_GPIO_Port, RADIO_BMP280_EN_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(TDA7318_EN_GPIO_Port, TDA7318_EN_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(OBDII_EN_GPIO_Port, OBDII_EN_Pin, GPIO_PIN_RESET);
+	GUI_Init();
+	CreateMainWindow();
+	
 //	TDA7318_SelectInput(Audio_Switch);
 //		Saved_Parameters.key = 41312;		
 //	OBD_General_State = NOP;
@@ -192,16 +199,12 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-	QueueODBFromISR = xQueueCreate(1, sizeof(DMA_BUFFER_OBD));
+	QueueODBFromISR = xQueueCreate(10, sizeof(DMA_BUFFER_OBD));
 	QueueBTFromISR = xQueueCreate(1, sizeof(DMA_BUFFER_BT));
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-	/* definition and creation of SaveReadParamet */
-  osThreadDef(SaveReadParamet, _SaveReadParameters, osPriorityNormal, 0, 2048);
-  SaveReadParametHandle = osThreadCreate(osThread(SaveReadParamet), NULL);
-	
   /* definition and creation of GUI */
   osThreadDef(GUI, _GUI, osPriorityNormal, 0, 2048);
   GUIHandle = osThreadCreate(osThread(GUI), NULL);
@@ -226,55 +229,14 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(Meteo, _Meteo, osPriorityNormal, 0, 256);
   MeteoHandle = osThreadCreate(osThread(Meteo), NULL);
 
-  
+  /* definition and creation of SaveReadParamet */
+  osThreadDef(SaveReadParamet, _SaveReadParameters, osPriorityNormal, 0, 2048);
+  SaveReadParametHandle = osThreadCreate(osThread(SaveReadParamet), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
-}
-
-/* USER CODE BEGIN Header__SaveReadParameters */
-/**
-* @brief Function implementing the SaveReadParamet thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header__SaveReadParameters */
-void _SaveReadParameters(void const * argument)
-{
-  /* USER CODE BEGIN _SaveReadParameters */
-	uint16_t Current_page;
-	HAL_PWR_EnableBkUpAccess();
-	Current_page = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR18);	
-	uint8_t TX_BUFFER[256];
-	uint8_t RX_BUFFER[256];
-	W25Q_Read(RX_BUFFER,Current_page);
-	ConvertArrayToStruct(RX_BUFFER, &Saved_Parameters);
-	if(Saved_Parameters.Volume == 0xFF)
-	{
-		LoadDefaultParameters(&Saved_Parameters);
-	}
-	LCD_Brightness(Saved_Parameters.Brightness);
-  /* Infinite loop */
-  for(;;)
-  {
-		ConvertStructToArray(&Saved_Parameters, TX_BUFFER);
-		W25Q_Read(RX_BUFFER, Current_page);
-		if(memcmp(RX_BUFFER, TX_BUFFER, 256) != 0)
-		{	
-			Current_page++;
-			if(Current_page >= W25Q_NUMBERS_OF_PAGES)
-			{
-				Current_page = 0;
-			}
-			W25Q_ChipErase();
-			W25Q_Write(TX_BUFFER, Current_page);			
-			HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR18, Current_page);
-		}
-    osDelay(600000);
-  }
-  /* USER CODE END _SaveReadParameters */
 }
 
 /* USER CODE BEGIN Header__GUI */
@@ -286,9 +248,9 @@ void _SaveReadParameters(void const * argument)
 /* USER CODE END Header__GUI */
 void _GUI(void const * argument)
 {
+
   /* USER CODE BEGIN _GUI */
-	GUI_Init();
-	CreateMainWindow();
+	
   /* Infinite loop */
   for(;;)
   {
@@ -348,7 +310,7 @@ void _Parser(void const * argument)
 		if(uxQueueMessagesWaitingFromISR(QueueODBFromISR)>0)
 		{
 			xQueueReceive(QueueODBFromISR, &OBD_BUFFER, 100);
-			OBD_CheckState(OBD_BUFFER, &CarParameters);
+			OBD_CheckState(OBD_BUFFER, &CarParameters);			
 		}
 		if(uxQueueMessagesWaitingFromISR(QueueBTFromISR)>0)
 			{
@@ -378,13 +340,12 @@ void _OBD(void const * argument)
   /* Infinite loop */
   for(;;)
   {		
-		if(Saved_Parameters.OBD_mode)
-		{	
+//		if(Saved_Parameters.OBD_mode == 1)
+//		{
 			if(OBD_General_State != OBD_INIT)
-			{
-				HAL_GPIO_WritePin(OBDII_EN_GPIO_Port, OBDII_EN_Pin, GPIO_PIN_SET);
+			{				
+				OBD_Init();		
 			}
-			OBD_Init();		
 			if(OBD_General_State == OBD_INIT)
 			{	
 				OBD_Update();
@@ -413,7 +374,7 @@ void _OBD(void const * argument)
 				{
 				Current_Consumption[k] = Car_Param.Fuel_consumption;
 				k++;
-				if(k == NUMBER_OF_MEASUREMENTS)
+				if(k == (NUMBER_OF_MEASUREMENTS - 1))
 				{
 					OBD_Average_Cons_State = CONSUMPTION_RECEIVE;
 					k = 0;
@@ -424,19 +385,18 @@ void _OBD(void const * argument)
 			}
 			if(OBD_Average_Cons_State == CONSUMPTION_RECEIVE)
 			{
-				for(uint8_t i = 0; i < NUMBER_OF_MEASUREMENTS; i++)
+				for(uint8_t i = 0; i <= NUMBER_OF_MEASUREMENTS - 1; i++)
 				{
-					Current_Consumption[0] += Current_Consumption[i];
+					Car_Param.Average_Consumption += Current_Consumption[i];
+//					Current_Consumption[0] += Current_Consumption[i];
 				}
-				Saved_Parameters.Average_consumption = Current_Consumption[0]/(float)NUMBER_OF_MEASUREMENTS;
+				Car_Param.Average_Consumption /= (float)NUMBER_OF_MEASUREMENTS;
+				Saved_Parameters.Average_consumption = (Saved_Parameters.Average_consumption + Car_Param.Average_Consumption) / 2.0f;
 				OBD_Average_Cons_State = CONSUMPTION_WAIT_RECEIVE;
 			}
 		}
-	}
-		else if(!Saved_Parameters.OBD_mode)
-		{
-			HAL_GPIO_WritePin(OBDII_EN_GPIO_Port, OBDII_EN_Pin, GPIO_PIN_RESET);
-		}
+//	}
+		
 }
   
   /* USER CODE END _OBD */
@@ -528,7 +488,48 @@ void _Meteo(void const * argument)
   /* USER CODE END _Meteo */
 }
 
-
+/* USER CODE BEGIN Header__SaveReadParameters */
+/**
+* @brief Function implementing the SaveReadParamet thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header__SaveReadParameters */
+void _SaveReadParameters(void const * argument)
+{
+  /* USER CODE BEGIN _SaveReadParameters */
+	uint16_t Current_page;
+	HAL_PWR_EnableBkUpAccess();
+	Current_page = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR18);	
+	uint8_t TX_BUFFER[256];
+	uint8_t RX_BUFFER[256];
+	W25Q_Read(RX_BUFFER,Current_page);
+	ConvertArrayToStruct(RX_BUFFER, &Saved_Parameters);
+	if(Saved_Parameters.Volume == 0xFF)
+	{
+		LoadDefaultParameters(&Saved_Parameters);
+	}
+	LCD_Brightness(Saved_Parameters.Brightness);
+  /* Infinite loop */
+  for(;;)
+  {
+		ConvertStructToArray(&Saved_Parameters, TX_BUFFER);
+		W25Q_Read(RX_BUFFER, Current_page);
+		if(memcmp(RX_BUFFER, TX_BUFFER, 256) != 0)
+		{	
+			Current_page++;
+			if(Current_page >= W25Q_NUMBERS_OF_PAGES)
+			{
+				Current_page = 0;
+			}
+			W25Q_ChipErase();
+			W25Q_Write(TX_BUFFER, Current_page);			
+			HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR18, Current_page);
+		}
+    osDelay(600000);
+  }
+  /* USER CODE END _SaveReadParameters */
+}
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */

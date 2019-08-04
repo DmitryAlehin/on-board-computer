@@ -22,7 +22,6 @@
 
 /* USER CODE BEGIN 0 */
 #define RTC_STATUS_TIME_OK              0xF1D1
-#define RTC_STATUS_REG 									RTC_BKP_DR19
 /* USER CODE END 0 */
 
 RTC_HandleTypeDef hrtc;
@@ -42,19 +41,21 @@ void MX_RTC_Init(void)
   hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
   hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
   hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-  if (HAL_RTC_Init(&hrtc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
+  
+	if (HAL_RTC_Init(&hrtc) != HAL_OK)
+		{
+			Error_Handler();
+		}
   /* USER CODE BEGIN Check_RTC_BKUP */
 	HAL_PWR_EnableBkUpAccess();
-	if(HAL_RTCEx_BKUPRead(&hrtc, RTC_STATUS_REG ) == RTC_STATUS_TIME_OK)
+	if(HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR19 ) == RTC_STATUS_TIME_OK)
 	{
 //		if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 59, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
 //		{
 //			Error_Handler();
 //		}
+		
+//		__HAL_RCC_RTC_ENABLE();
 	}
 	else
 	{
@@ -84,17 +85,16 @@ void MX_RTC_Init(void)
   /** Enable the WakeUp 
   */
   
-	if (HAL_RTC_Init(&hrtc) != HAL_OK)
+	
+	if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 59, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
   {
     Error_Handler();
   }
-//	if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 59, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-	HAL_RTCEx_BKUPWrite(&hrtc, RTC_STATUS_REG, RTC_STATUS_TIME_OK);
+//	__HAL_RCC_RTC_ENABLE();
+	HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR19, RTC_STATUS_TIME_OK);
 }
 }
+
 
 void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
 {
@@ -102,11 +102,11 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
   if(rtcHandle->Instance==RTC)
   {
   /* USER CODE BEGIN RTC_MspInit 0 */
-//		
+		
   /* USER CODE END RTC_MspInit 0 */
     /* RTC clock enable */
     __HAL_RCC_RTC_ENABLE();
-
+		
     /* RTC interrupt Init */
     HAL_NVIC_SetPriority(RTC_WKUP_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
@@ -122,7 +122,7 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef* rtcHandle)
   if(rtcHandle->Instance==RTC)
   {
   /* USER CODE BEGIN RTC_MspDeInit 0 */
-//	
+	
   /* USER CODE END RTC_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_RTC_DISABLE();
@@ -155,8 +155,7 @@ void RTC_Interrupt(void)
 	HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
 }
 
-__weak void RTC_WakeupCallback(void) 
-{
+__weak void RTC_WakeupCallback(void) {
 	/* If user needs this function, then they should be defined separatelly in your project */
 }
 
@@ -173,6 +172,7 @@ __weak void RTC_WakeupCallback(void)
 //	/* Clear EXTI line 22 bit */
 //	__HAL_RTC_WAKEUPTIMER_EXTI_CLEAR_FLAG();
 //}
+
 
 void RTC_Fix_Date(RTC_DateTypeDef *sDate)
 {

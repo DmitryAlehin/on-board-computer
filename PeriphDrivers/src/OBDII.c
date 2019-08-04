@@ -5,7 +5,7 @@ extern OBD_General_States_Typedef OBD_General_State;
 extern CarParameters_Typedef CarParameters;
 extern OBD_Sign_States_Typedef OBD_Sign_State;
 extern OBD_Data_States_Typedef OBD_Data_State;
-
+extern OBD_Errors_State_Typedef OBD_Errors_State;
 
 void OBD_Init(void)
 {
@@ -13,40 +13,53 @@ void OBD_Init(void)
 			{
 				/* старт инициализации*/				
 				case NOP:
-					HAL_UART_Transmit(&huart1, "atws\r\n", 7, 100);
+					HAL_Delay(4000);
 					OBD_General_State = WAIT_INIT;
+					HAL_UART_Transmit(&huart1, "atws\r\n", 7, 100);
+					
+					
 					break;
 				/* если устройство отвечает и соединение установлено*/
 				case CONNECT:
+//					HAL_Delay(500);
+				OBD_General_State = WAIT_INIT;
 					HAL_UART_Transmit(&huart1, "attp1\r\n", 8, 100);
-					OBD_General_State = WAIT_INIT;
+				
+					
 					break;
 				/* отстуствие данных, отправка команды для проверки подключения*/
 				case NO_DATA:
-//					OBD_Data_State = READY_TO_RECEIVE;
-//					OBD_General_State = OBD_INIT;	
-					HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
+					HAL_Delay(1000);
+				OBD_General_State = WAIT_INIT;
 					HAL_UART_Transmit(&huart1, "ati\r\n", 8, 100);
-					OBD_General_State = WAIT_INIT;
+//					OBD_General_State = WAIT_INIT;
 					break;
 				/* удалить*/
 				case DISCONNECT:
+//					HAL_Delay(500);
+				OBD_General_State = WAIT_INIT;
 					HAL_UART_Transmit(&huart1, "ati\r\n", 6, 100);
-					OBD_General_State = WAIT_INIT;
 					break;
 				/* протокол применен, отправка команды для получения текущего протокола*/
 				case ATTP_OK:
+//					HAL_Delay(500);
+				OBD_General_State = WAIT_INIT;
 					HAL_UART_Transmit(&huart1, "atdp\r\n", 7, 100);
-					OBD_General_State = WAIT_INIT;
 					break;
 				/* протокол настроен правильно, отправка команды для получения VIN номера авто*/
-				case ATDP_OK:					
-					HAL_UART_Transmit(&huart1, "ate0\r\n", 7, 100);
+				case ATDP_OK:	
+//					HAL_Delay(50);
 					OBD_General_State = WAIT_ATE;
+					HAL_UART_Transmit(&huart1, "ate0\r\n", 7, 100);
+					
 					break;
-				case ATE_OK:					
-					HAL_UART_Transmit(&huart1, "0902\r\n", 7, 100);
+				case ATE_OK:
+//					HAL_Delay(500);
 					OBD_General_State = WAIT_INIT;
+					HAL_UART_Transmit(&huart1, "0902\r\n", 7, 100);
+					
+//					OBD_Data_State = READY_TO_RECEIVE;
+//					OBD_General_State = OBD_INIT;
 					break;
 				/* ожидание - ничего не делать*/
 				case WAIT_INIT:
@@ -54,7 +67,8 @@ void OBD_Init(void)
 					break;
 				/* VIN номер получен - устройство инициализировано, данные занесены в соотв. сруктуру данных*/ 
 				case VIN_INIT:
-//					OBD_Data_State = READY_TO_RECEIVE;
+					
+					OBD_Data_State = READY_TO_RECEIVE;
 					OBD_General_State = OBD_INIT;					
 					break;
 				/* функция ничего не делает после инициализации устройства*/
@@ -78,12 +92,15 @@ void OBD_Update(void)
 			break;
 		/* готов к получению данных - устройство верно инициализировано, отправляется команда для получения напряжения*/
 		case READY_TO_RECEIVE:
-			HAL_Delay(500);
-			HAL_UART_Transmit(&huart1, "atrv\r\n", 8, 100);
+			HAL_Delay(100);
 			OBD_Data_State = WAIT_VOLT;
+			HAL_UART_Transmit(&huart1, "atrv\r\n", 8, 100);
+			
 			break;
 		/* получено напряжение, отправка команды для получения скорости*/
-		case VOLTAGE_DATA_COMPLETE:			
+		case VOLTAGE_DATA_COMPLETE:
+//			HAL_Delay(100);
+			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK) //проверка текущего заголовка
 			{
 				HAL_UART_Transmit(&huart1, "22000d1\r\n", 10, 100); // отправка команды для получения скорости
@@ -91,105 +108,122 @@ void OBD_Update(void)
 			}
 			else
 			{
-				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100); // отправка команды для применения заголовка для работы с PCM
 				OBD_Sign_State = WAIT_PCM;
+				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100); // отправка команды для применения заголовка для работы с PCM
+				
 				
 			}
-			OBD_Data_State = WAIT_DATA;
+			
 			break;
 			/* получено значение скорости, отправка команды для получения оборотов*/
 		case VSS_DATA_COMPLETE:
+//			HAL_Delay(100);
+			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK)
 			{
 				HAL_UART_Transmit(&huart1, "22000c1\r\n", 10, 100); // отправка команды для получения оборотов
 			}
 			else
 			{
-				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100);
 				OBD_Sign_State = WAIT_PCM;
+				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100);
+				
 			}
-			OBD_Data_State = WAIT_DATA;
+			
 			break;
 			/* получено значение оборотов, отправка команды для получения температуры охлаждающей жидкости*/
 		case RPM_DATA_COMPLETE:
+//			HAL_Delay(100);
+			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK)
 			{
 				HAL_UART_Transmit(&huart1, "2200051\r\n", 10, 100); // отправка команды для получения температуры охлаждающей жидкости
 			}
 			else
 			{
-				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100);
 				OBD_Sign_State = WAIT_PCM;
-			}
-			OBD_Data_State = WAIT_DATA;
+				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100);
+				
+			}		
 			break;
 			/* получено значение температуры ОЖ, отправка команды для получения температуры на впуске*/
 		case ECT_DATA_COMPLETE:
+//			HAL_Delay(100);
+			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK)
 			{
 				HAL_UART_Transmit(&huart1, "22000f1\r\n", 10, 100); //отправка команды для получения температуры на впуске				
 			}
 			else
 			{
-				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100);
 				OBD_Sign_State = WAIT_PCM;
+				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100);
+				
 			}
-			OBD_Data_State = WAIT_DATA;
 			break;
 			/* получено значение температуры на впуске, отправка команды для получения давления на впуске */
 		case IAT_DATA_COMPLETE:
+//			HAL_Delay(100);
+			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK)
 			{
 				HAL_UART_Transmit(&huart1, "22000b1\r\n", 10, 100); //отправка команды для получения давления на впуске
 			}
 			else
 			{
-				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100);
 				OBD_Sign_State = WAIT_PCM;
+				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100);
+				
 			}
-			OBD_Data_State = WAIT_DATA;
 			break;
 			/* получено значение давления на впуске, отправка команды для получения кратковременной подстройки топлива*/
 		case MAP_DATA_COMPLETE:
+//			HAL_Delay(100);
+			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK)
 			{
 				HAL_UART_Transmit(&huart1, "2200061\r\n", 10, 100); //отправка команды для получения кратковременной подстройки топлива
 			}
 			else
 			{
-				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100);
 				OBD_Sign_State = WAIT_PCM;
+				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100);
+				
 			}
-			OBD_Data_State = WAIT_DATA;
 			break;
 			/* получено значение кратковременной подстройки топливаб отправка команды для получения долговременной подстройки топлива*/
 		case SHRTFT_DATA_COMPLETE:
+//			HAL_Delay(100);
+			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK)
 			{
 				HAL_UART_Transmit(&huart1, "2200071\r\n", 10, 100); //отправка команды для получения долговременной подстройки топлива
 			}
 			else
 			{
-				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100);
 				OBD_Sign_State = WAIT_PCM;
+				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100);
+				
 			}
-			OBD_Data_State = WAIT_DATA;
 			break;
 			/* получено значение кратковременной подстройки топлива, отправка команды для получения значения уровня топлива*/
 		case LONGFT_DATA_COMPLETE:
+//			HAL_Delay(100);
+			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == IC_OK) //проверка текущего заголовка
 			{
 				HAL_UART_Transmit(&huart1, "2261851\r\n", 10, 100); //отправка команды для получения значения уровня топлива
 			}
 			else
 			{
-				HAL_UART_Transmit(&huart1, "atshc460f5\r\n", 13, 100); // отправка команды для применения заголовка для работы с IC
 				OBD_Sign_State = WAIT_IC;
-			}
-			OBD_Data_State = WAIT_DATA;			
+				HAL_UART_Transmit(&huart1, "atshc460f5\r\n", 13, 100); // отправка команды для применения заголовка для работы с IC
+				
+			}			
 			break;
 			/* получено значение уровня топлива*/
-		case FUELLVL_DATA_COMPLETE:			
+		case FUELLVL_DATA_COMPLETE:
+			
 			OBD_Data_State = COMPLETE_ALL_DATA; // все данные получены
 			break;
 		/* все данные получены - функция ничего не делает */
@@ -221,46 +255,75 @@ void OBD_CheckState(uint8_t * buffer, CarParameters_Typedef *car)
 	unsigned int number;
 	float Voltage;
 	/* Ответ от сканера после перезагрузки и включения*/ 
-	if(strcmp((char *)buffer,"\r\rELM327 v1.5\r\r>") == 0)
+	if(strncmp((char *)buffer,"\r\rELM327 v1.5\r\r>", 65) == 0)
 	{					
 		OBD_General_State = CONNECT;
 		// если произойдет перезагрузка устройства, данный флаг позволит правильно инициализировать протокол
 		OBD_Sign_State = OBD_OK; 
 	}
-	if(strcmp((char *)buffer,"ELM327 v1.5\r\r>") == 0)
+	if(strncmp((char *)buffer,"ELM327 v1.5\r\r>", 14) == 0)
 	{					
 		OBD_General_State = CONNECT;
 		// если произойдет перезагрузка устройства, данный флаг позволит правильно инициализировать протокол
 		OBD_Sign_State = OBD_OK; 
 	}
-	if(strcmp((char *)buffer,"?\r\r>") == 0)
-	{
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+	if(strncmp((char *)buffer,"?\r\r>", 4) == 0)
+	{		
+		OBD_General_State = CONNECT;
+		// если произойдет перезагрузка устройства, данный флаг позволит правильно инициализировать протокол
+		OBD_Sign_State = OBD_OK; 
+	}
+	if(strncmp((char *)buffer,"STOPPED\r\r>", 10) == 0)
+	{		
+		OBD_General_State = CONNECT;
+		// если произойдет перезагрузка устройства, данный флаг позволит правильно инициализировать протокол
+		OBD_Sign_State = OBD_OK; 
 	}
 	/* ответ от сканера при применении настроек*/
-	if(strcmp((char *)buffer,"OK\r\r>") == 0)
+	if(strncmp((char *)buffer,"OK\r\r>", 5) == 0)
 	{	
-		if(OBD_Sign_State == WAIT_IC) //если ожидаем включение заголовка IC
+		switch(OBD_Sign_State)
 		{
-			OBD_Sign_State = IC_OK;
-			OBD_Data_State = LONGFT_DATA_COMPLETE;
+			case WAIT_IC:
+				OBD_Sign_State = IC_OK;
+				OBD_Data_State = LONGFT_DATA_COMPLETE;
+				break;
+			case WAIT_PCM:
+				OBD_Sign_State = PCM_OK;
+				OBD_Data_State = VOLTAGE_DATA_COMPLETE;
+				break;
+			case OBD_OK:
+				if(OBD_General_State == WAIT_ATE)
+				{
+					OBD_General_State = ATE_OK;		
+				}
+				else
+				{
+					OBD_General_State = ATTP_OK;
+				}
+				break;
 		}
-		else if(OBD_Sign_State == WAIT_PCM) //если ожидаем включение заголовка PCM
-		{
-			OBD_Sign_State = PCM_OK;
-			OBD_Data_State = VOLTAGE_DATA_COMPLETE;
-		}
-		else if((OBD_Sign_State == OBD_OK) && (OBD_General_State == WAIT_INIT)) //вхождение при инициализации
-		{
-			OBD_General_State = ATTP_OK;		
-		}
-		else if((OBD_Sign_State == OBD_OK) && (OBD_General_State == WAIT_ATE)) 
-		{
-			OBD_General_State = ATE_OK;		
-		}				
+//		if(OBD_Sign_State == WAIT_IC) //если ожидаем включение заголовка IC
+//		{
+//			OBD_Sign_State = IC_OK;
+//			OBD_Data_State = LONGFT_DATA_COMPLETE;
+//		}
+//		else if(OBD_Sign_State == WAIT_PCM) //если ожидаем включение заголовка PCM
+//		{
+//			OBD_Sign_State = PCM_OK;
+//			OBD_Data_State = VOLTAGE_DATA_COMPLETE;
+//		}
+//		else if((OBD_Sign_State == OBD_OK) && (OBD_General_State == WAIT_INIT)) //вхождение при инициализации
+//		{
+//			OBD_General_State = ATTP_OK;		
+//		}
+//		else if((OBD_Sign_State == OBD_OK) && (OBD_General_State == WAIT_ATE)) 
+//		{
+//			OBD_General_State = ATE_OK;		
+//		}				
 	}
 	/* ответ от сканера при применении протокола */
-	if(strcmp((char *)buffer,"SAE J1850 PWM\r\r>") == 0)
+	if(strncmp((char *)buffer,"SAE J1850 PWM\r\r>", 16) == 0)
 	{				
 		OBD_General_State = ATDP_OK;				
 	}		
@@ -268,7 +331,7 @@ void OBD_CheckState(uint8_t * buffer, CarParameters_Typedef *car)
 	**глюк
 	**неправильная инициализация
 	**/
-	if(strcmp((char *)buffer,"NO DATA\r\r>") == 0)
+	if(strncmp((char *)buffer,"NO DATA\r\r>", 10) == 0)
 	{
 		OBD_General_State = NO_DATA;
 	}
@@ -290,6 +353,7 @@ void OBD_CheckState(uint8_t * buffer, CarParameters_Typedef *car)
 			sprintf((char *)VIN[number - 1], "%c%c%c%c", htoi((char *)PIECE1), htoi((char *)PIECE2), htoi((char *)PIECE3), htoi((char *)PIECE4));
 			if(number == 5)
 			{
+				
 				sprintf((char *)car->VIN_NUMBER, "%s%s%s%s%s", VIN[0], VIN[1], VIN[2], VIN[3], VIN[4]);
 				OBD_General_State = VIN_INIT;
 			}
@@ -311,35 +375,7 @@ void OBD_CheckState(uint8_t * buffer, CarParameters_Typedef *car)
 			car->FUEL = htoi((char *)A);
 			OBD_Data_State = FUELLVL_DATA_COMPLETE;		
 	}
-	if(buffer[1] == '6' &&	buffer[2] == '2' &&	buffer[3] == ' ' && buffer[4] == '6' &&	buffer[5] == '1')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+10];
-		}	
-			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			car->FUEL = htoi((char *)A);
-			OBD_Data_State = FUELLVL_DATA_COMPLETE;		
-	}
-	if(buffer[2] == '6' &&	buffer[3] == '2' &&	buffer[4] == ' ' && buffer[5] == '6' &&	buffer[6] == '1')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+11];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-			car->FUEL = htoi((char *)A);
-			OBD_Data_State = FUELLVL_DATA_COMPLETE;		
-	}
-	if(buffer[3] == '6' &&	buffer[4] == '2' &&	buffer[5] == ' ' && buffer[6] == '6' &&	buffer[7] == '1')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+12];
-		}	
-			car->FUEL = htoi((char *)A);
-			OBD_Data_State = FUELLVL_DATA_COMPLETE;		
-	}
+	
 	/* получение значения температуры ОЖ*/
 	if(buffer[0] == '6' &&	buffer[1] == '2' &&	buffer[2] == ' ' && buffer[3] == '0' &&	buffer[4] == '0' &&	buffer[5] == ' ' &&	buffer[6] == '0' &&	buffer[7] == '5')
 	{
@@ -350,35 +386,7 @@ void OBD_CheckState(uint8_t * buffer, CarParameters_Typedef *car)
 			car->ECT = htoi((char *)A);
 			OBD_Data_State = ECT_DATA_COMPLETE;		
 	}
-	if(buffer[1] == '6' &&	buffer[2] == '2' &&	buffer[3] == ' ' && buffer[4] == '0' &&	buffer[5] == '0' &&	buffer[6] == ' ' &&	buffer[7] == '0' &&	buffer[8] == '5')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+10];
-		}	
-HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);		
-			car->ECT = htoi((char *)A);
-			OBD_Data_State = ECT_DATA_COMPLETE;		
-	}
-	if(buffer[2] == '6' &&	buffer[3] == '2' &&	buffer[4] == ' ' && buffer[5] == '0' &&	buffer[6] == '0' &&	buffer[7] == ' ' &&	buffer[8] == '0' &&	buffer[9] == '5')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+11];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-			car->ECT = htoi((char *)A);
-			OBD_Data_State = ECT_DATA_COMPLETE;		
-	}
-	if(buffer[3] == '6' &&	buffer[4] == '2' &&	buffer[5] == ' ' && buffer[6] == '0' &&	buffer[7] == '0' &&	buffer[8] == ' ' &&	buffer[9] == '0' &&	buffer[10] == '5')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+12];
-		}		
-			car->ECT = htoi((char *)A);
-			OBD_Data_State = ECT_DATA_COMPLETE;		
-	}
+	
 	/* получение значения температуры поступающего воздуха*/
 	if(buffer[0] == '6' &&	buffer[1] == '2' &&	buffer[2] == ' ' && buffer[3] == '0' &&	buffer[4] == '0' &&	buffer[5] == ' ' &&	buffer[6] == '0' &&	buffer[7] == 'F')
 	{
@@ -389,36 +397,7 @@ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
 			car->IAT = htoi((char *)A);
 			OBD_Data_State = IAT_DATA_COMPLETE;		
 	}
-	if(buffer[1] == '6' &&	buffer[2] == '2' &&	buffer[3] == ' ' && buffer[4] == '0' &&	buffer[5] == '0' &&	buffer[6] == ' ' &&	buffer[7] == '0' &&	buffer[8] == 'F')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+10];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			car->IAT = htoi((char *)A);
-			OBD_Data_State = IAT_DATA_COMPLETE;		
-	}
-	if(buffer[2] == '6' &&	buffer[3] == '2' &&	buffer[4] == ' ' && buffer[5] == '0' &&	buffer[6] == '0' &&	buffer[7] == ' ' &&	buffer[8] == '0' &&	buffer[9] == 'F')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+11];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-			car->IAT = htoi((char *)A);
-			OBD_Data_State = IAT_DATA_COMPLETE;		
-	}
-	if(buffer[3] == '6' &&	buffer[4] == '2' &&	buffer[5] == ' ' && buffer[6] == '0' &&	buffer[7] == '0' &&	buffer[8] == ' ' &&	buffer[9] == '0' &&	buffer[10] == 'F')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+12];
-		}		
-		
-			car->IAT = htoi((char *)A);
-			OBD_Data_State = IAT_DATA_COMPLETE;		
-	}
+	
 	/* получение значения долговременной подстройки подачи топлива*/
 	if(buffer[0] == '6' &&	buffer[1] == '2' &&	buffer[2] == ' ' && buffer[3] == '0' &&	buffer[4] == '0' &&	buffer[5] == ' ' &&	buffer[6] == '0' &&	buffer[7] == '7')
 	{
@@ -429,35 +408,7 @@ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
 			car->LONGFT = htoi((char *)A);
 			OBD_Data_State = LONGFT_DATA_COMPLETE;		
 	}
-		if(buffer[1] == '6' &&	buffer[2] == '2' &&	buffer[3] == ' ' && buffer[4] == '0' &&	buffer[5] == '0' &&	buffer[6] == ' ' &&	buffer[7] == '0' &&	buffer[8] == '7')
-{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+10];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			car->LONGFT = htoi((char *)A);
-			OBD_Data_State = LONGFT_DATA_COMPLETE;		
-	}			
-	if(buffer[2] == '6' &&	buffer[3] == '2' &&	buffer[4] == ' ' && buffer[5] == '0' &&	buffer[6] == '0' &&	buffer[7] == ' ' &&	buffer[8] == '0' &&	buffer[9] == '7')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+11];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-			car->LONGFT = htoi((char *)A);
-			OBD_Data_State = LONGFT_DATA_COMPLETE;		
-	}
-	if(buffer[3] == '6' &&	buffer[4] == '2' &&	buffer[5] == ' ' && buffer[6] == '0' &&	buffer[7] == '0' &&	buffer[8] == ' ' &&	buffer[9] == '0' &&	buffer[10] == '7')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+12];
-		}
-			car->LONGFT = htoi((char *)A);
-			OBD_Data_State = LONGFT_DATA_COMPLETE;		
-	}
+		
 	/* получение значения кратковременной подстройки подачи топлива*/
 	if(buffer[0] == '6' &&	buffer[1] == '2' &&	buffer[2] == ' ' && buffer[3] == '0' &&	buffer[4] == '0' &&	buffer[5] == ' ' &&	buffer[6] == '0' &&	buffer[7] == '6')
 	{
@@ -468,35 +419,7 @@ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
 			car->SHRTFT = htoi((char *)A);
 			OBD_Data_State = SHRTFT_DATA_COMPLETE;		
 	}		
-		if(buffer[1] == '6' &&	buffer[2] == '2' &&	buffer[3] == ' ' && buffer[4] == '0' &&	buffer[5] == '0' &&	buffer[6] == ' ' &&	buffer[7] == '0' &&	buffer[8] == '6')
-{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+10];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			car->SHRTFT = htoi((char *)A);
-			OBD_Data_State = SHRTFT_DATA_COMPLETE;		
-	}			
-	if(buffer[2] == '6' &&	buffer[3] == '2' &&	buffer[4] == ' ' && buffer[5] == '0' &&	buffer[6] == '0' &&	buffer[7] == ' ' &&	buffer[8] == '0' &&	buffer[9] == '6')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+11];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-			car->SHRTFT = htoi((char *)A);
-			OBD_Data_State = SHRTFT_DATA_COMPLETE;		
-	}
-	if(buffer[3] == '6' &&	buffer[4] == '2' &&	buffer[5] == ' ' && buffer[6] == '0' &&	buffer[7] == '0' &&	buffer[8] == ' ' &&	buffer[9] == '0' &&	buffer[10] == '6')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+12];
-		}
-			car->SHRTFT = htoi((char *)A);
-			OBD_Data_State = SHRTFT_DATA_COMPLETE;		
-	}
+		
 	/* получение значения скорости*/
 	if(buffer[0] == '6' &&	buffer[1] == '2' &&	buffer[2] == ' ' && buffer[3] == '0' &&	buffer[4] == '0' &&	buffer[5] == ' ' &&	buffer[6] == '0' &&	buffer[7] == 'D')
 {
@@ -507,36 +430,7 @@ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
 			car->VSS = htoi((char *)A);
 			OBD_Data_State = VSS_DATA_COMPLETE;		
 	}		
-		if(buffer[1] == '6' &&	buffer[2] == '2' &&	buffer[3] == ' ' && buffer[4] == '0' &&	buffer[5] == '0' &&	buffer[6] == ' ' &&	buffer[7] == '0' &&	buffer[8] == 'D')
-{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+10];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			car->VSS = htoi((char *)A);
-			OBD_Data_State = VSS_DATA_COMPLETE;		
-	}			
-	if(buffer[2] == '6' &&	buffer[3] == '2' &&	buffer[4] == ' ' && buffer[5] == '0' &&	buffer[6] == '0' &&	buffer[7] == ' ' &&	buffer[8] == '0' &&	buffer[9] == 'D')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+11];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-			car->VSS = htoi((char *)A);
-			OBD_Data_State = VSS_DATA_COMPLETE;		
-	}
-	if(buffer[3] == '6' &&	buffer[4] == '2' &&	buffer[5] == ' ' && buffer[6] == '0' &&	buffer[7] == '0' &&	buffer[8] == ' ' &&	buffer[9] == '0' &&	buffer[10] == 'D')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+12];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-			car->VSS = htoi((char *)A);
-			OBD_Data_State = VSS_DATA_COMPLETE;		
-	}
+		
 	/* получение значения давления на впуске*/
 	if(buffer[0] == '6' &&	buffer[1] == '2' &&	buffer[2] == ' ' && buffer[3] == '0' &&	buffer[4] == '0' &&	buffer[5] == ' ' &&	buffer[6] == '0' &&	buffer[7] == 'B')
 {
@@ -547,36 +441,7 @@ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
 			car->MAP = htoi((char *)A);
 			OBD_Data_State = MAP_DATA_COMPLETE;		
 	}		
-		if(buffer[1] == '6' &&	buffer[2] == '2' &&	buffer[3] == ' ' && buffer[4] == '0' &&	buffer[5] == '0' &&	buffer[6] == ' ' &&	buffer[7] == '0' &&	buffer[8] == 'B')
-{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+10];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			car->MAP = htoi((char *)A);
-			OBD_Data_State = MAP_DATA_COMPLETE;		
-	}			
-	if(buffer[2] == '6' &&	buffer[3] == '2' &&	buffer[4] == ' ' && buffer[5] == '0' &&	buffer[6] == '0' &&	buffer[7] == ' ' &&	buffer[8] == '0' &&	buffer[9] == 'B')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+11];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-			car->MAP = htoi((char *)A);
-			OBD_Data_State = MAP_DATA_COMPLETE;		
-	}
-	if(buffer[3] == '6' &&	buffer[4] == '2' &&	buffer[5] == ' ' && buffer[6] == '0' &&	buffer[7] == '0' &&	buffer[8] == ' ' &&	buffer[9] == '0' &&	buffer[10] == 'B')
-	{
-		for(uint8_t i = 0; i<2; i++)
-		{
-			A[i] = buffer[i+12];
-		}		
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-			car->MAP = htoi((char *)A);
-			OBD_Data_State = MAP_DATA_COMPLETE;		
-	}
+		
 	/* получение значения оборотов*/
 	if(buffer[0] == '6' &&	buffer[1] == '2' &&	buffer[2] == ' ' && buffer[3] == '0' &&	buffer[4] == '0' &&	buffer[5] == ' ' &&	buffer[6] == '0' &&	buffer[7] == 'C')
 		{
@@ -590,54 +455,60 @@ HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
 			car->RPM_B = htoi((char *)PIECE2);
 			OBD_Data_State = RPM_DATA_COMPLETE;
 		}					
-	}
-		if(buffer[1] == '6' &&	buffer[2] == '2' &&	buffer[3] == ' ' && buffer[4] == '0' &&	buffer[5] == '0' &&	buffer[6] == ' ' &&	buffer[7] == '0' &&	buffer[8] == 'C')
-{
-		for(uint8_t i = 0; i<5; i++)
-		{
-			B[i] = buffer[i+10];
-		}	
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-			if(sscanf((char *)B, "%s %s", PIECE1, PIECE2) == 2)
-		{
-			car->RPM_A = htoi((char *)PIECE1);
-			car->RPM_B = htoi((char *)PIECE2);
-			OBD_Data_State = RPM_DATA_COMPLETE;
-		}					
-	}			
-	if(buffer[2] == '6' &&	buffer[3] == '2' &&	buffer[4] == ' ' && buffer[5] == '0' &&	buffer[6] == '0' &&	buffer[7] == ' ' &&	buffer[8] == '0' &&	buffer[9] == 'C')
-		
+	}	
+	if(buffer[0] == '6' &&	buffer[1] == '2' &&	buffer[2] == ' ' && buffer[3] == '0' &&	buffer[4] == '2' &&	buffer[5] == ' ' &&	buffer[6] == '0' &&	buffer[7] == '0')
 	{
-		for(uint8_t i = 0; i<5; i++)
+		for(uint8_t i = 0; i < 2; i++)
 		{
-			B[i] = buffer[i+11];
-		}	
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-			if(sscanf((char *)B, "%s %s", PIECE1, PIECE2) == 2)
-		{
-			car->RPM_A = htoi((char *)PIECE1);
-			car->RPM_B = htoi((char *)PIECE2);
-			OBD_Data_State = RPM_DATA_COMPLETE;
-		}					
+			PIECE1[i] = buffer[i+9];
+		}
+		car->NumberOfErrors = htoi((char *)PIECE1);
+		OBD_Errors_State = WAIT_ERROR;
 	}
-	if(buffer[3] == '6' &&	buffer[4] == '2' &&	buffer[5] == ' ' && buffer[6] == '0' &&	buffer[7] == '0' &&	buffer[8] == ' ' &&	buffer[9] == '0' &&	buffer[10] == 'C')
-		
-	{
-		for(uint8_t i = 0; i<5; i++)
-		{
-			B[i] = buffer[i+12];
-		}	
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
-			if(sscanf((char *)B, "%s %s", PIECE1, PIECE2) == 2)
-		{
-			car->RPM_A = htoi((char *)PIECE1);
-			car->RPM_B = htoi((char *)PIECE2);
-			OBD_Data_State = RPM_DATA_COMPLETE;
-		}					
-	}
+	
+//	 for(uint8_t i = 0; i < DMA_BUFFER_OBD_SIZE; i++)
+//	 {
+//		buffer[i] = 0;
+//	 }
+	
 }
 
-
+void OBDReadErrors(void)
+{
+	switch(OBD_Errors_State)
+	{
+		case START_READ_ERRORS:
+			OBD_Errors_State = WAIT_ERROR;
+			if(OBD_Sign_State == PCM_OK) //проверка текущего заголовка
+			{
+				HAL_UART_Transmit(&huart1, "2202001\r\n", 10, 100); // отправка команды для получения скорости				
+			}
+			else
+			{
+				OBD_Sign_State = WAIT_PCM;
+				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100); // отправка команды для применения заголовка для работы с PCM
+			}
+			break;
+		case READ_OBD_ERRORS:
+			OBD_Errors_State = WAIT_ERROR;
+			if(OBD_Sign_State == PCM_OK) //проверка текущего заголовка
+			{
+				HAL_UART_Transmit(&huart1, "13\r\n", 10, 100); // отправка команды для получения скорости				
+			}
+			else
+			{
+				OBD_Sign_State = WAIT_PCM;
+				HAL_UART_Transmit(&huart1, "atshc410f5\r\n", 13, 100); // отправка команды для применения заголовка для работы с PCM
+			}
+			break;
+		case CLEAR_OBD_ERRORS:
+			OBD_Errors_State = WAIT_ERROR;
+			HAL_UART_Transmit(&huart1, "04\r\n", 5, 100);
+			break;
+		case WAIT_ERROR:
+			break;
+	}
+}
 	
 int htoi(const char* hex)
 {

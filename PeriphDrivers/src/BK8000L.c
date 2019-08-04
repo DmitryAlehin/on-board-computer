@@ -75,7 +75,7 @@ void BTCheckState(uint8_t * buffer, BT_Values_Typedef * Bluetooth)
 //	else
 //	{
 //		msg.MsgId = WM_UPDATE_BT;
-//	}
+//	}	
 	for(uint8_t i = 0; i<DMA_BUFFER_BT_SIZE; i++)
 	{
 		buffer[i] = 0;

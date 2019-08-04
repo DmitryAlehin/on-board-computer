@@ -5,6 +5,7 @@
 #include "usart.h"
 #include "string.h"
 #include "ctype.h"
+#include "stdio.h"
 extern uint8_t OBD_BUFFER[DMA_BUFFER_OBD_SIZE];
 
 typedef enum 
@@ -59,18 +60,27 @@ typedef struct
 {
 	uint8_t VIN_NUMBER[26];
 	float Voltage;
-	uint8_t VSS, RPM_A, RPM_B, ECT, IAT, MAP, FUEL, LONGFT, SHRTFT;	
+	uint8_t VSS, RPM_A, RPM_B, ECT, IAT, MAP, FUEL, LONGFT, SHRTFT;
+	uint8_t NumberOfErrors;
 }CarParameters_Typedef;
 
 typedef struct
 {	
-	float Voltage, ECT, FUEL, Fuel_consumption, LH_consumption, FUEL_Liters;	
+	float Voltage, ECT, FUEL, Fuel_consumption, LH_consumption, FUEL_Liters, Average_Consumption;	
 }CarValues_Typedef;
 
+typedef enum
+{
+	START_READ_ERRORS = 0,
+	WAIT_ERROR,
+	READ_OBD_ERRORS,
+	CLEAR_OBD_ERRORS
+}OBD_Errors_State_Typedef;
 
 void OBD_Init(void);
 void OBD_Update(void);
 void OBD_CheckState(uint8_t * buffer, CarParameters_Typedef *car);
+void OBDReadErrors(void);
 int htoi(const char* hex);
 int getRawInt(char c);
 #endif

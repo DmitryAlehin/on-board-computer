@@ -153,4 +153,5 @@ void LoadDefaultParameters(Saved_parameters_Typedef *Struct)
 	Struct->Treble = 0;
 	Struct->Volume = 48;
 	Struct->Consumption_mode = 0;
+	Struct->Average_consumption = 10.0;
 }

@@ -142,9 +142,12 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   MX_RTC_Init();
+//	__HAL_RCC_RTC_ENABLE();
   MX_TIM7_Init();
-  /* USER CODE BEGIN 2 */
+  /* USER CODE BEGIN 2 */	
+//	if(!(*(volatile uint32_t *) (BDCR_RTCEN_BB)))__HAL_RCC_RTC_ENABLE();
 	RTC_Interrupt();
+	
 	hdma_usart1_rx.Instance->CR &= ~DMA_SxCR_HTIE;
 	hdma_usart2_rx.Instance->CR &= ~DMA_SxCR_HTIE;
 	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
