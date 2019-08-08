@@ -207,10 +207,12 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		
 		TDA7318_SetVolume(Saved_Parameters.Volume);		
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_0);
-		SLIDER_SetRange(hItem, -14, 14);
+		SLIDER_SetRange(hItem, 0, 28);
+		SLIDER_SetNumTicks(hItem, 15);
 		SLIDER_SetValue(hItem, Saved_Parameters.Bass);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_1);
-		SLIDER_SetRange(hItem, -14, 14);
+		SLIDER_SetRange(hItem, 0, 28);
+		SLIDER_SetNumTicks(hItem, 15);
 		SLIDER_SetValue(hItem, Saved_Parameters.Treble);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_2);
 		SLIDER_SetRange(hItem, 0, 31);
@@ -254,7 +256,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
 				sprintf((char *) Data, "Value: %d", ~(Saved_Parameters.Bass - 1));
 				TEXT_SetText(hItem, (char *)Data);
-				TDA7318_SetBass(Saved_Parameters.Bass);
+				TDA7318_SetBass(Saved_Parameters.Bass - 14);
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)
@@ -279,7 +281,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
 				sprintf((char *) Data, "Value: %d", ~(Saved_Parameters.Treble - 1));
 				TEXT_SetText(hItem, (char *)Data);
-				TDA7318_SetTreble(Saved_Parameters.Treble);
+				TDA7318_SetTreble(Saved_Parameters.Treble - 14);
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)

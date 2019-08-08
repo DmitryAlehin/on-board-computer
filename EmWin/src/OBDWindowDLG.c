@@ -114,7 +114,8 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     TEXT_SetText(hItem, "NumError");
     TEXT_SetTextColor(hItem, GUI_RED_COLOR);
     TEXT_SetFont(hItem, GUI_FONT_24B_1);
-		TEXT_SetText(hItem, "");
+		TEXT_SetText(hItem, (char *)OBD_BUFFER);
+//		TEXT_SetText(hItem, "");
     //
     // Initialization of 'Transcript_Text'
     //
@@ -195,13 +196,8 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-//				GUI_EndDialog(CreateOBDWindow(), 0);
-////				WM_DeleteWindow(hWin);
-//				hWin = CreateMainWindow();
 				WM_DeleteWindow(pMsg->hWin);
-				hWin = CreateMainWindow();
-//				retCode = GUI_ExecCreatedDialog(hWin);
-				
+				hWin = CreateMainWindow();				
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)

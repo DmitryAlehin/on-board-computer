@@ -141,7 +141,7 @@ void ConvertArrayToStruct( uint8_t *Array, Saved_parameters_Typedef *Struct)
 void LoadDefaultParameters(Saved_parameters_Typedef *Struct)
 {
 	Struct->Amplification = 4;
-	Struct->Bass = 0;
+	Struct->Bass = 14;
 	Struct->Brightness = 127;
 	Struct->FL = 0;
 	Struct->FR = 0;
@@ -150,7 +150,7 @@ void LoadDefaultParameters(Saved_parameters_Typedef *Struct)
 	Struct->RL = 0;
 	Struct->RR = 0;
 	Struct->Temperature_mode = 1;
-	Struct->Treble = 0;
+	Struct->Treble = 14;
 	Struct->Volume = 48;
 	Struct->Consumption_mode = 0;
 	Struct->Average_consumption = 10.0;

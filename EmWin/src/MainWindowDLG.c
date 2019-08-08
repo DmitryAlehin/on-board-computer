@@ -211,6 +211,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     TEXT_SetTextAlign(hItem, GUI_TA_LEFT | GUI_TA_VCENTER);
     TEXT_SetTextColor(hItem, GUI_RED_COLOR);
     TEXT_SetFont(hItem, GUI_FONT_32B_1);
+		TEXT_SetText(hItem, "");
     // USER START (Optionally insert additional code for further widget initialization)
 //		LCD_Brightness(Saved_Parameters.Brightness);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_0);

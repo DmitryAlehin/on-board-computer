@@ -176,6 +176,7 @@ void MX_FREERTOS_Init(void) {
 	HAL_GPIO_WritePin(RADIO_BMP280_EN_GPIO_Port, RADIO_BMP280_EN_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(TDA7318_EN_GPIO_Port, TDA7318_EN_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(OBDII_EN_GPIO_Port, OBDII_EN_Pin, GPIO_PIN_RESET);
+	Car_Param.Average_Consumption = 0.0f;
 	GUI_Init();
 	CreateMainWindow();
 	
@@ -340,8 +341,8 @@ void _OBD(void const * argument)
   /* Infinite loop */
   for(;;)
   {		
-//		if(Saved_Parameters.OBD_mode == 1)
-//		{
+		if(Saved_Parameters.OBD_mode == 1)
+		{
 			if(OBD_General_State != OBD_INIT)
 			{				
 				OBD_Init();		
@@ -367,9 +368,11 @@ void _OBD(void const * argument)
 				MAP = CarParameters.MAP;
 				RPM = (CarParameters.RPM_A * 256.0f + CarParameters.RPM_B)/4.0f;
 				Fb = (Saved_Parameters.K / 100.0f) * (RPM / 60.0f) * MAP * 0.8f * 28.98f / (8.31441f * (IAT + 273.15f));
-				Ft = 1000.0f * (1.0f + 0.001f * (IAT - 20.0f)) * 3600.0f * Fb * 1.0f + ((SHRTFT + LONGFT) / 100.0f) / (14.7f * 750.0f);
-				Car_Param.Fuel_consumption = Ft / (VSS * 1000000.0f);
-				Car_Param.LH_consumption = Ft;
+				Ft = 1000.0f * (1.0f + 0.001f * (IAT - 20.0f)) * 3600.0f * Fb * (1.0f + ((SHRTFT + LONGFT) / 100.0f)) / (14.7f * 760.0f);
+				Car_Param.Fuel_consumption = Ft / (VSS * 100000.0f);
+				Car_Param.LH_consumption = Ft;				
+				OBD_Data_State = CALCULATE_END;
+				msg.MsgId = WM_UPDATE_CAR;
 				if(OBD_Average_Cons_State == CONSUMPTION_WAIT_RECEIVE)
 				{
 				Current_Consumption[k] = Car_Param.Fuel_consumption;
@@ -380,8 +383,6 @@ void _OBD(void const * argument)
 					k = 0;
 				}
 				}
-				OBD_Data_State = CALCULATE_END;
-				msg.MsgId = WM_UPDATE_CAR;			
 			}
 			if(OBD_Average_Cons_State == CONSUMPTION_RECEIVE)
 			{
@@ -395,7 +396,7 @@ void _OBD(void const * argument)
 				OBD_Average_Cons_State = CONSUMPTION_WAIT_RECEIVE;
 			}
 		}
-//	}
+	}
 		
 }
   
