@@ -91,8 +91,8 @@ void ConvertStructToArray(Saved_parameters_Typedef *Struct, uint8_t *Array)
 	Array[0] = Struct->Amplification;	
 	Array[1] = Struct->Bass;
 	Array[2] = Struct->Brightness;
-	Array[3] = Struct->Consumption_mode;
-	Array[4] = Struct->Debug_mode;
+	Array[3] = Struct->Fuel_mode;
+	Array[4] = Struct->Pressure_mode;
 	Array[5] = Struct->FL;
 	Array[6] = Struct->FR;
 	Array[7] = Struct->K;
@@ -119,8 +119,8 @@ void ConvertArrayToStruct( uint8_t *Array, Saved_parameters_Typedef *Struct)
 	Struct->Amplification = Array[0];
 	Struct->Bass = Array[1];
 	Struct->Brightness = Array[2];
-	Struct->Consumption_mode = Array[3];
-	Struct->Debug_mode = Array[4];
+	Struct->Fuel_mode = Array[3];
+	Struct->Pressure_mode = Array[4];
 	Struct->FL = Array[5];
 	Struct->FR = Array[6];
 	Struct->K = Array[7];
@@ -152,6 +152,7 @@ void LoadDefaultParameters(Saved_parameters_Typedef *Struct)
 	Struct->Temperature_mode = 1;
 	Struct->Treble = 14;
 	Struct->Volume = 48;
-	Struct->Consumption_mode = 0;
-	Struct->Average_consumption = 10.0;
+	Struct->Fuel_mode = 0;
+	Struct->Average_consumption = 10.0f;
+	Struct->Pressure_mode = 0;
 }

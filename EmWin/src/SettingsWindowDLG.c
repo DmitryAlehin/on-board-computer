@@ -204,16 +204,16 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     CHECKBOX_SetTextColor(hItem, GUI_BLUE_COLOR);
 		CHECKBOX_SetFocusColor(hItem, GUI_GRAY_COLOR);
     CHECKBOX_SetFont(hItem, GUI_FONT_24B_1);
-		CHECKBOX_SetState(hItem, Saved_Parameters.Consumption_mode);
+		CHECKBOX_SetState(hItem, Saved_Parameters.Fuel_mode);
     //
-    // Initialization of 'Debug_Checkbox'
+    // Initialization of 'Press_Checkbox'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_3);
-    CHECKBOX_SetText(hItem, "Debug");
+    CHECKBOX_SetText(hItem, "Press");
     CHECKBOX_SetTextColor(hItem, GUI_BLUE_COLOR);
 		CHECKBOX_SetFocusColor(hItem, GUI_GRAY_COLOR);
     CHECKBOX_SetFont(hItem, GUI_FONT_24B_1);
-		CHECKBOX_SetState(hItem, Saved_Parameters.Debug_mode);
+		CHECKBOX_SetState(hItem, Saved_Parameters.Pressure_mode);
     //
     // Initialization of 'About_Button'
     //
@@ -429,7 +429,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_2);				
-				Saved_Parameters.Consumption_mode = CHECKBOX_GetState(hItem);
+				Saved_Parameters.Fuel_mode = CHECKBOX_GetState(hItem);
         // USER END
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
@@ -450,7 +450,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_3);				
-				Saved_Parameters.Debug_mode = CHECKBOX_GetState(hItem);
+				Saved_Parameters.Pressure_mode = CHECKBOX_GetState(hItem);
         // USER END
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:

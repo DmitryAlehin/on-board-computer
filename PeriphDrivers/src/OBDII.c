@@ -31,7 +31,7 @@ void OBD_Init(void)
 				case NO_DATA:
 					HAL_Delay(1000);
 				OBD_General_State = WAIT_INIT;
-					HAL_UART_Transmit(&huart1, "atws\r\n", 8, 100);
+					HAL_UART_Transmit(&huart1, "atz\r\n", 8, 100);
 //					OBD_General_State = WAIT_INIT;
 					break;
 				/* удалить*/
@@ -300,6 +300,10 @@ void OBD_CheckState(uint8_t * buffer, CarParameters_Typedef *car)
 			case WAIT_PCM:
 				OBD_Sign_State = PCM_OK;
 				OBD_Data_State = VOLTAGE_DATA_COMPLETE;
+				if(OBD_Errors_State == START_READ_ERRORS)
+				{
+					OBD_Errors_State = READ_OBD_ERRORS;
+				}
 				break;
 			case OBD_OK:
 				if(OBD_General_State == WAIT_ATE)
@@ -472,7 +476,8 @@ void OBD_CheckState(uint8_t * buffer, CarParameters_Typedef *car)
 			PIECE1[i] = buffer[i+9];
 		}
 		car->NumberOfErrors = htoi((char *)PIECE1);
-		OBD_Errors_State = WAIT_ERROR;
+		OBD_Errors_State = READ_OBD_ERRORS;
+		msg.MsgId = WM_UPDATE_OBD_ERRORS;
 	}
 	
 //	 for(uint8_t i = 0; i < DMA_BUFFER_OBD_SIZE; i++)
@@ -490,7 +495,7 @@ void OBDReadErrors(void)
 			OBD_Errors_State = WAIT_ERROR;
 			if(OBD_Sign_State == PCM_OK) //проверка текущего заголовка
 			{
-				HAL_UART_Transmit(&huart1, "2202001\r\n", 10, 100); // отправка команды для получения скорости				
+				HAL_UART_Transmit(&huart1, "2202001\r\n", 10, 100); // отправка команды для получения количества ошибок				
 			}
 			else
 			{
@@ -502,7 +507,7 @@ void OBDReadErrors(void)
 			OBD_Errors_State = WAIT_ERROR;
 			if(OBD_Sign_State == PCM_OK) //проверка текущего заголовка
 			{
-				HAL_UART_Transmit(&huart1, "13\r\n", 10, 100); // отправка команды для получения скорости				
+				HAL_UART_Transmit(&huart1, "13\r\n", 10, 100); // отправка команды для получения номеров ошибок			
 			}
 			else
 			{
@@ -512,7 +517,7 @@ void OBDReadErrors(void)
 			break;
 		case CLEAR_OBD_ERRORS:
 			OBD_Errors_State = WAIT_ERROR;
-			HAL_UART_Transmit(&huart1, "04\r\n", 5, 100);
+			HAL_UART_Transmit(&huart1, "04\r\n", 5, 100); // отправка команды для удаления номеров ошибок
 			break;
 		case WAIT_ERROR:
 			break;

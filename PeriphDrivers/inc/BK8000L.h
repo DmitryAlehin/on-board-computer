@@ -23,6 +23,7 @@ typedef enum
 	BT_DISCONNECTED,
 	BT_PAUSE,
 	BT_PLAY,
+	BT_CALL
 }BT_States_Typedef;
 
 typedef enum 
@@ -33,7 +34,7 @@ typedef enum
 
 typedef struct
 {	
-	uint8_t BT_NAME[10], PIN[10]; 	
+	uint8_t BT_NAME[10], PIN[10], CALL_NUMBER[13]; 	
 }BT_Values_Typedef;
 
 void BTCheckState(uint8_t * buffer, BT_Values_Typedef * Bluetooth);

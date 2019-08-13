@@ -294,10 +294,10 @@ typedef struct {
 #define WM_UPDATE_CAR               0x0402  /* Update car parameters*/
 #define WM_UPDATE_AUDIO             0x0403  /* Update TDA7318 states*/
 #define WM_UPDATE_BT             		0x0404	/* Update bluetooth states*/
-#define WM_UPDATE_BT_POWERMODE      0x0405	/* Update bluetooth power mode states*/
-#define WM_UPDATE_METEO             0x0406
+#define WM_UPDATE_OBD_ERRORS	      0x0405	/* Update OBD errors*/
+#define WM_UPDATE_METEO             0x0406	/* Update meteo*/
 #define WM_AUX             					0x0407
-#define WM_RADIO             				0x0408
+#define WM_RADIO             				0x0408	/* Update radio states*/
 /*********************************************************************
 *
 *       Motion messages

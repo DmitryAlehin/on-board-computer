@@ -254,7 +254,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_0);
 				Saved_Parameters.Bass = SLIDER_GetValue(hItem);
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
-				sprintf((char *) Data, "Value: %d", ~(Saved_Parameters.Bass - 1));
+				sprintf((char *) Data, "Value: %d", Saved_Parameters.Bass - 14);
 				TEXT_SetText(hItem, (char *)Data);
 				TDA7318_SetBass(Saved_Parameters.Bass - 14);
         // USER END
@@ -279,7 +279,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				Saved_Parameters.Treble = SLIDER_GetValue(hItem);
 //				Saved_Parameters.Treble =~ (SLIDER_GetValue(hItem) - 16);
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
-				sprintf((char *) Data, "Value: %d", ~(Saved_Parameters.Treble - 1));
+				sprintf((char *) Data, "Value: %d", Saved_Parameters.Treble -14);
 				TEXT_SetText(hItem, (char *)Data);
 				TDA7318_SetTreble(Saved_Parameters.Treble - 14);
         // USER END

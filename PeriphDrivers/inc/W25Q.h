@@ -36,19 +36,19 @@ typedef struct
 	uint8_t Brightness;
 	uint8_t Temperature_mode;
 	uint8_t OBD_mode;
-	uint8_t Debug_mode;
-	uint8_t Consumption_mode;
+	uint8_t Pressure_mode;
+	uint8_t Fuel_mode;
 	uint8_t K;
 	uint8_t Volume;
 	uint32_t key;
 	float Average_consumption;
-	int8_t FL;
-	int8_t FR;
-	int8_t RL;
-	int8_t RR;
-	int8_t Bass;
-	int8_t Treble;
-	int8_t Amplification;
+	uint8_t FL;
+	uint8_t FR;
+	uint8_t RL;
+	uint8_t RR;
+	uint8_t Bass;
+	uint8_t Treble;
+	uint8_t Amplification;
 }Saved_parameters_Typedef;
 
 void W25Q_ChipErase(void);

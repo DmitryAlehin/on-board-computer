@@ -62,6 +62,7 @@ uint8_t Volume;
 extern RDA5807M_Data_Typedef RDA5807M_Data;
 extern Audio_Switch_States_Typedef Audio_Switch;
 extern GUI_CONST_STORAGE GUI_FONT GUI_FontArialBlack32;
+extern OBD_General_States_Typedef OBD_General_State;
 // USER END
 
 /*********************************************************************
@@ -91,8 +92,8 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { BUTTON_CreateIndirect, "MUTE_Button", ID_BUTTON_8, 648, 200, 150, 100, 0, 0x0, 0 },    
   { TEXT_CreateIndirect, "AUDIO_Text", ID_TEXT_1, 220, 140, 400, 50, 0, 0x0, 0 },
   { BUTTON_CreateIndirect, "Main_Button", ID_BUTTON_9, 698, 410, 100, 70, 0, 0x0, 0 },
-  { TEXT_CreateIndirect, "Cons_Text", ID_TEXT_2, 675, 0, 125, 30, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "Bat_Text", ID_TEXT_3, 570, 0, 100, 30, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "Cons_Text", ID_TEXT_2, 665, 0, 135, 30, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "Bat_Text", ID_TEXT_3, 570, 0, 90, 30, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "AUDIO_Text", ID_TEXT_4, 380, 55, 100, 50, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "BT_INFO_Text", ID_TEXT_5, 150, 30, 150, 70, 0, 0x0, 0 },
 	{ SLIDER_CreateIndirect, "Volume_Slider", ID_SLIDER_0, 268, 350, 320, 50, 0, 0x0, 0 },
@@ -248,8 +249,8 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		TEXT_SetText(hItem, "");
     // USER START (Optionally insert additional code for further widget initialization)
 		TDA7318_SetVolume(Saved_Parameters.Volume);		
-		TDA7318_SetBass(Saved_Parameters.Bass);
-		TDA7318_SetTreble(Saved_Parameters.Treble);
+		TDA7318_SetBass(Saved_Parameters.Bass - 14);
+		TDA7318_SetTreble(Saved_Parameters.Treble - 14);
 		TDA7318_SetAmplification(Saved_Parameters.Amplification);
 		TDA7318_SetAttenuation(TDA7318_SPEAKER_LF, Saved_Parameters.FL);
 		TDA7318_SetAttenuation(TDA7318_SPEAKER_RF, Saved_Parameters.FR);
@@ -310,13 +311,41 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
 		sprintf((char *)Data, "%02d:%02d", time.Hours, time.Minutes);
 		TEXT_SetText(hItem, (char *)Data);
-		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
-		sprintf((char *)Data, "%.1f L/100km", Car_Param.Fuel_consumption);
-		TEXT_SetText(hItem, (char *)Data);
-		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
-		sprintf((char *)Data, "%.1f V", CarParameters.Voltage);
-		TEXT_SetText(hItem, (char *)Data);
-			
+//		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
+//		sprintf((char *)Data, "%.1f L/100km", Car_Param.Fuel_consumption);
+//		TEXT_SetText(hItem, (char *)Data);
+//		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
+//		sprintf((char *)Data, "%.1f V", CarParameters.Voltage);
+//		TEXT_SetText(hItem, (char *)Data);
+		if(Saved_Parameters.OBD_mode)
+		{
+			if(OBD_General_State == OBD_INIT)
+			{
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
+				if(CarParameters.VSS != 0.0f)
+				{
+					if(Saved_Parameters.Average_consumption != 0.0f)
+					{
+						sprintf((char *)Data, "%.1f L/100km", Saved_Parameters.Average_consumption);
+						TEXT_SetText(hItem, (char *)Data);
+					}
+				}
+				else
+				{
+					if(Car_Param.LH_consumption != 0.0f)
+					{
+						sprintf((char *)Data, "%.1f L/h", Car_Param.LH_consumption);
+						TEXT_SetText(hItem, (char *)Data);
+					}
+				}
+			}
+			if(CarParameters.Voltage != 0.0f)
+			{
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
+				sprintf((char *)Data, "%.1f V", CarParameters.Voltage);
+				TEXT_SetText(hItem, (char *)Data);
+			}
+		}	
 		if(BT_General_State == BT_INIT_OK)
 		{
 			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);
@@ -348,6 +377,11 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				BUTTON_SetFocussable(hItem, 0);		
 				break;
 			case WAIT:	
+				break;
+			case BT_CALL:
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+				TEXT_SetText(hItem, (char *)BT_Value.CALL_NUMBER);
+				TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
 				break;
 		}
 //		if(BT_State == BT_CONNECTED)
@@ -399,16 +433,45 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 			sprintf((char *)Data, "%02d:%02d", time.Hours, time.Minutes);
 			HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
 			TEXT_SetText(hItem, (char *)Data);
+			if(CarParameters.Voltage != 0.0f)
+			{
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
+				sprintf((char *)Data, "%.1f V", CarParameters.Voltage);
+				TEXT_SetText(hItem, (char *)Data);
+			}
 			pMsg->MsgId = 0;
 			break;
 		
 		case WM_UPDATE_CAR:
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
-			sprintf((char *)Data, "%.1f L/100km", Car_Param.Fuel_consumption);
-			TEXT_SetText(hItem, (char *)Data);
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
-			sprintf((char *)Data, "%.1f V", CarParameters.Voltage);
-			TEXT_SetText(hItem, (char *)Data);
+			if(Saved_Parameters.OBD_mode)
+			{
+				if(OBD_General_State == OBD_INIT)
+				{
+					hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
+					if(CarParameters.VSS != 0.0f)
+					{
+						if(Saved_Parameters.Average_consumption != 0.0f)
+						{
+							sprintf((char *)Data, "%.1f L/100km", Saved_Parameters.Average_consumption);
+							TEXT_SetText(hItem, (char *)Data);
+						}
+					}
+					else
+					{
+						if(Car_Param.LH_consumption != 0.0f)
+						{
+							sprintf((char *)Data, "%.1f L/h", Car_Param.LH_consumption);
+							TEXT_SetText(hItem, (char *)Data);
+						}
+					}
+				}
+				if(CarParameters.Voltage != 0.0f)
+				{
+					hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
+					sprintf((char *)Data, "%.1f V", CarParameters.Voltage);
+					TEXT_SetText(hItem, (char *)Data);
+				}
+			}	
 			pMsg->MsgId = 0;
 			break;		
 		case WM_UPDATE_AUDIO:			
@@ -493,6 +556,11 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				BUTTON_SetFocussable(hItem, 0);		
 				break;
 			case WAIT:	
+				break;
+			case BT_CALL:
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+				TEXT_SetText(hItem, (char *)BT_Value.CALL_NUMBER);
+				TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
 				break;
 		}
 		pMsg->MsgId = 0;

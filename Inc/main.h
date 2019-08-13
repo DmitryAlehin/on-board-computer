@@ -109,8 +109,8 @@ void Error_Handler(void);
 #define T_CS_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 #define DMA_BUFFER_OBD_SIZE 30
-#define DMA_BUFFER_BT_SIZE 15
-#define NUMBER_OF_MEASUREMENTS 19
+#define DMA_BUFFER_BT_SIZE 17
+#define NUMBER_OF_MEASUREMENTS 15
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

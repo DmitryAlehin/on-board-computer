@@ -276,9 +276,9 @@ void _GUI(void const * argument)
 			case WM_UPDATE_BT:
 				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
 				break;
-//			case WM_UPDATE_BT_POWERMODE:
-//				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
-//				break;
+			case WM_UPDATE_OBD_ERRORS:
+				WM_SendMessage(GuiHandles.hOBDWindow, &msg);
+				break;
 			case WM_UPDATE_METEO:
 				WM_SendMessage(GuiHandles.hMainWindow, &msg);
 				break;
@@ -337,7 +337,7 @@ void _OBD(void const * argument)
   /* USER CODE BEGIN _OBD */
 	float VSS, MAP, IAT, RPM, LONGFT, SHRTFT, Fb, Ft;
 	uint8_t k = 0;
-	float Current_Consumption[NUMBER_OF_MEASUREMENTS];
+	float Current_Consumption[NUMBER_OF_MEASUREMENTS] = {0};
   /* Infinite loop */
   for(;;)
   {		
@@ -368,35 +368,41 @@ void _OBD(void const * argument)
 				MAP = CarParameters.MAP;
 				RPM = (CarParameters.RPM_A * 256.0f + CarParameters.RPM_B)/4.0f;
 				Fb = (Saved_Parameters.K / 100.0f) * (RPM / 60.0f) * MAP * 0.8f * 28.98f / (8.31441f * (IAT + 273.15f));
-				Ft = 1000.0f * (1.0f + 0.001f * (IAT - 20.0f)) * 3600.0f * Fb * (1.0f + ((SHRTFT + LONGFT) / 100.0f)) / (14.7f * 760.0f);
-				Car_Param.Fuel_consumption = Ft / (VSS * 100000.0f);
-				Car_Param.LH_consumption = Ft;				
+				Ft = /*1000.0f * */(1.0f + 0.001f * (IAT - 20.0f)) * 3600.0f * Fb * (1.0f + ((SHRTFT + LONGFT) / 100.0f)) / (14.7f * 760.0f);
+				Car_Param.LH_consumption = Ft;
+				
+				if(VSS > 0)
+				{
+					Car_Param.Fuel_consumption = (Ft / VSS) * 100.0f;								
+					if(k == (NUMBER_OF_MEASUREMENTS - 1))
+					{
+						for(uint8_t i = 0; i < NUMBER_OF_MEASUREMENTS; i++)
+						{
+							Car_Param.Average_Consumption += Current_Consumption[i];
+						}
+						Car_Param.Average_Consumption /= (float)NUMBER_OF_MEASUREMENTS;
+						Saved_Parameters.Average_consumption = (Saved_Parameters.Average_consumption + Car_Param.Average_Consumption) / 2.0f;
+						k = 0;
+					}
+					else
+					{
+						Current_Consumption[k] = Car_Param.Fuel_consumption;
+						k++;
+					}
+				}
+				
 				OBD_Data_State = CALCULATE_END;
-				msg.MsgId = WM_UPDATE_CAR;
-				if(OBD_Average_Cons_State == CONSUMPTION_WAIT_RECEIVE)
-				{
-				Current_Consumption[k] = Car_Param.Fuel_consumption;
-				k++;
-				if(k == (NUMBER_OF_MEASUREMENTS - 1))
-				{
-					OBD_Average_Cons_State = CONSUMPTION_RECEIVE;
-					k = 0;
-				}
-				}
-			}
-			if(OBD_Average_Cons_State == CONSUMPTION_RECEIVE)
-			{
-				for(uint8_t i = 0; i <= NUMBER_OF_MEASUREMENTS - 1; i++)
-				{
-					Car_Param.Average_Consumption += Current_Consumption[i];
-//					Current_Consumption[0] += Current_Consumption[i];
-				}
-				Car_Param.Average_Consumption /= (float)NUMBER_OF_MEASUREMENTS;
-				Saved_Parameters.Average_consumption = (Saved_Parameters.Average_consumption + Car_Param.Average_Consumption) / 2.0f;
-				OBD_Average_Cons_State = CONSUMPTION_WAIT_RECEIVE;
-			}
+				msg.MsgId = WM_UPDATE_CAR;	
+			}			
 		}
 	}
+		else
+		{
+			if(OBD_Errors_State != WAIT_ERROR)
+			{
+				OBDReadErrors();
+			}
+		}
 		
 }
   
@@ -506,10 +512,11 @@ void _SaveReadParameters(void const * argument)
 	uint8_t RX_BUFFER[256];
 	W25Q_Read(RX_BUFFER,Current_page);
 	ConvertArrayToStruct(RX_BUFFER, &Saved_Parameters);
-	if(Saved_Parameters.Volume == 0xFF)
+	if(Saved_Parameters.Amplification == 0xFF)
 	{
 		LoadDefaultParameters(&Saved_Parameters);
 	}
+	Car_Param.Average_Consumption = Saved_Parameters.Average_consumption;
 	LCD_Brightness(Saved_Parameters.Brightness);
   /* Infinite loop */
   for(;;)

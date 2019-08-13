@@ -6,6 +6,9 @@
 #include "string.h"
 #include "ctype.h"
 #include "stdio.h"
+#include "WM.h"
+//#include "DIALOG.h"
+extern WM_MESSAGE msg;
 extern uint8_t OBD_BUFFER[DMA_BUFFER_OBD_SIZE];
 
 typedef enum 

@@ -40,12 +40,13 @@
 #define ID_TEXT_4         (GUI_ID_USER + 0x08)
 #define ID_TEXT_5         (GUI_ID_USER + 0x09)
 #define ID_TEXT_6         (GUI_ID_USER + 0x0A)
-
+#define ID_TEXT_7         (GUI_ID_USER + 0x0B)
 // USER START (Optionally insert additional defines)
 RTC_TimeTypeDef time;
 RTC_DateTypeDef date;
 GUIHandles GuiHandles;
 extern TnP Temp_Pres;
+extern OBD_General_States_Typedef OBD_General_State;
 // USER END
 
 /*********************************************************************
@@ -69,11 +70,12 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { BUTTON_CreateIndirect, "AUDIO_Button", ID_BUTTON_2, 0, 0, 170, 155, 0, 0x0, 0 },
   { TEXT_CreateIndirect, "Time_Text", ID_TEXT_0, 340, 110, 260, 90, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "Date_Text", ID_TEXT_1, 340, 220, 260, 30, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "Temperature_Text", ID_TEXT_2, 450, 320, 340, 50, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "Fuel_Text", ID_TEXT_3, 510, 430, 110, 40, 0, 0x64, 0 },
-  { TEXT_CreateIndirect, "Vbat_Text", ID_TEXT_4, 220, 430, 110, 40, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "Temperature_Text", ID_TEXT_2, 450, 320, 140, 50, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "Fuel_Text", ID_TEXT_3, 500, 430, 120, 40, 0, 0x64, 0 },
+  { TEXT_CreateIndirect, "Vbat_Text", ID_TEXT_4, 220, 430, 90, 40, 0, 0x64, 0 },
   { TEXT_CreateIndirect, "F_Text", ID_TEXT_5, 350, 430, 160, 40, 0, 0x64, 0 },
 	{ TEXT_CreateIndirect, "Temp_Engine_Text", ID_TEXT_6, 620, 430, 110, 40, 0, 0x64, 0 },
+	{ TEXT_CreateIndirect, "Pressure_Text", ID_TEXT_7, 590, 320, 200, 50, 0, 0x64, 0 },
   // USER START (Optionally insert additional widgets)
   // USER END
 };
@@ -212,6 +214,13 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     TEXT_SetTextColor(hItem, GUI_RED_COLOR);
     TEXT_SetFont(hItem, GUI_FONT_32B_1);
 		TEXT_SetText(hItem, "");
+		// Initialization of 'Pressure_Text'
+    //
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_7);
+    TEXT_SetTextAlign(hItem, GUI_TA_LEFT | GUI_TA_VCENTER);
+    TEXT_SetTextColor(hItem, GUI_BLUE_COLOR);
+    TEXT_SetFont(hItem, GUI_FONT_32B_1);
+		TEXT_SetText(hItem, "");
     // USER START (Optionally insert additional code for further widget initialization)
 //		LCD_Brightness(Saved_Parameters.Brightness);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_0);
@@ -225,21 +234,67 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		TEXT_SetText(hItem, (char *)Data);
 		if(Saved_Parameters.OBD_mode)
 		{
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);
-			if(CarParameters.VSS != 0.0f)
+			if(OBD_General_State == OBD_INIT)
 			{
-				if(Saved_Parameters.Average_consumption != 0.0f)
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);
+				if(CarParameters.VSS != 0.0f)
 				{
-					sprintf((char *)Data, "%.1f L/100km", Saved_Parameters.Average_consumption);
+					if(Saved_Parameters.Average_consumption != 0.0f)
+					{
+						sprintf((char *)Data, "%.1f L/100km", Saved_Parameters.Average_consumption);
+						TEXT_SetText(hItem, (char *)Data);
+					}
+					else
+					{
+						TEXT_SetText(hItem, "");
+					}
+				}
+				else
+				{
+					if(Car_Param.LH_consumption != 0.0f)
+					{
+						sprintf((char *)Data, "%.1f L/h", Car_Param.LH_consumption);
+						TEXT_SetText(hItem, (char *)Data);
+					}
+					else
+					{
+						TEXT_SetText(hItem, "");
+					}
+				}
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
+				if(Saved_Parameters.Fuel_mode)
+				{	
+					if(Car_Param.FUEL_Liters != 0.0f)
+					{				
+						sprintf((char *)Data, "%.1f L", Car_Param.FUEL_Liters);
+						TEXT_SetText(hItem, (char *)Data);
+					}
+					else
+					{
+						TEXT_SetText(hItem, "");
+					}
+				}
+				else
+				{
+					if(Car_Param.FUEL != 0.0f)
+					{	
+						sprintf((char *)Data, "%.1f%c", Car_Param.FUEL, 37);
+						TEXT_SetText(hItem, (char *)Data);
+					}
+					else
+					{
+						TEXT_SetText(hItem, "");
+					}
+				}
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_6);
+				if(Car_Param.ECT >108.0f)
+				{			
+					sprintf((char *)Data, "%.1f %cC", Car_Param.ECT, 176);
 					TEXT_SetText(hItem, (char *)Data);
 				}
-			}
-			else
-			{
-				if(Car_Param.LH_consumption != 0.0f)
-				{
-					sprintf((char *)Data, "%.1f L/h", Car_Param.LH_consumption);
-					TEXT_SetText(hItem, (char *)Data);
+				else	
+				{						
+					TEXT_SetText(hItem, "");
 				}
 			}
 			if(CarParameters.Voltage != 0.0f)
@@ -247,35 +302,8 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);
 				sprintf((char *)Data, "%.1f V", CarParameters.Voltage);
 				TEXT_SetText(hItem, (char *)Data);
-			}
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
-			if(Saved_Parameters.Consumption_mode)
-			{	
-				if(Car_Param.FUEL_Liters != 0.0f)
-				{				
-					sprintf((char *)Data, "%.1f L", Car_Param.FUEL_Liters);
-					TEXT_SetText(hItem, (char *)Data);
-				}
-			}
-			else
-			{
-				if(Car_Param.FUEL != 0.0f)
-				{	
-					sprintf((char *)Data, "%.1f%c", Car_Param.FUEL, 37);
-					TEXT_SetText(hItem, (char *)Data);
-				}
-			}
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_6);
-			if(Car_Param.ECT >108.0f)
-			{			
-				sprintf((char *)Data, "%.1f %cC", Car_Param.ECT, 176);
-				TEXT_SetText(hItem, (char *)Data);
-			}
-			else	
-			{						
-				TEXT_SetText(hItem, "");
-			}
-		}		
+			}				
+		}				
 		pMsg->MsgId = 0;
     // USER END
     break;
@@ -290,48 +318,87 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
 		sprintf((char *)Data, "%02d.%02d.20%02d", date.Date, date.Month, date.Year);
 		TEXT_SetText(hItem, (char *)Data);
+		if(CarParameters.Voltage != 0.0f)
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);
+			sprintf((char *)Data, "%.1f V", CarParameters.Voltage);
+			TEXT_SetText(hItem, (char *)Data);
+		}
 		pMsg->MsgId = 0;
 		break;
 	
 	case WM_UPDATE_CAR:
 		if(Saved_Parameters.OBD_mode)
 		{
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);
-			if(CarParameters.VSS == 0)
+			if(OBD_General_State == OBD_INIT)
 			{
-				sprintf((char *)Data, "%.1f L/100km", Saved_Parameters.Average_consumption);
-				TEXT_SetText(hItem, (char *)Data);
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);
+				if(CarParameters.VSS != 0.0f)
+				{
+					if(Saved_Parameters.Average_consumption != 0.0f)
+					{
+						sprintf((char *)Data, "%.1f L/100km", Saved_Parameters.Average_consumption);
+						TEXT_SetText(hItem, (char *)Data);
+					}
+					else
+					{
+						TEXT_SetText(hItem, "");
+					}
+				}
+				else
+				{
+					if(Car_Param.LH_consumption != 0.0f)
+					{
+						sprintf((char *)Data, "%.1f L/h", Car_Param.LH_consumption);
+						TEXT_SetText(hItem, (char *)Data);
+					}
+					else
+					{
+						TEXT_SetText(hItem, "");
+					}
+				}
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
+				if(Saved_Parameters.Fuel_mode)
+				{	
+					if(Car_Param.FUEL_Liters != 0.0f)
+					{				
+						sprintf((char *)Data, "%.1f L", Car_Param.FUEL_Liters);
+						TEXT_SetText(hItem, (char *)Data);
+					}
+					else
+					{
+						TEXT_SetText(hItem, "");
+					}
+				}
+				else
+				{
+					if(Car_Param.FUEL != 0.0f)
+					{	
+						sprintf((char *)Data, "%.1f%c", Car_Param.FUEL, 37);
+						TEXT_SetText(hItem, (char *)Data);
+					}
+					else
+					{
+						TEXT_SetText(hItem, "");
+					}
+				}
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_6);
+				if(Car_Param.ECT >108.0f)
+				{			
+					sprintf((char *)Data, "%.1f %cC", Car_Param.ECT, 176);
+					TEXT_SetText(hItem, (char *)Data);
+				}
+				else	
+				{						
+					TEXT_SetText(hItem, "");
+				}
 			}
-			else
+			if(CarParameters.Voltage != 0.0f)
 			{
-				sprintf((char *)Data, "%.1f L/h", Car_Param.LH_consumption);
+				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);
+				sprintf((char *)Data, "%.1f V", CarParameters.Voltage);
 				TEXT_SetText(hItem, (char *)Data);
-			}
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);
-			sprintf((char *)Data, "%.1f V", Car_Param.Voltage);
-			TEXT_SetText(hItem, (char *)Data);
-			
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
-			if(!Saved_Parameters.Consumption_mode)
-			{			
-				sprintf((char *)Data, "%.1f L", Car_Param.FUEL_Liters);
-				TEXT_SetText(hItem, (char *)Data);
-			}
-			else
-			{
-				sprintf((char *)Data, "%.1f%c", Car_Param.FUEL, 37);
-				TEXT_SetText(hItem, (char *)Data);
-			}
-			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_6);
-			if(Car_Param.ECT >108.0f)
-			{			
-				sprintf((char *)Data, "%.1f %cC", Car_Param.ECT, 176);
-				TEXT_SetText(hItem, (char *)Data);
-			}
-			else	
-			{						
-				TEXT_SetText(hItem, "");
-			}	
+			}				
 		}		
 		pMsg->MsgId = 0;
 		break;
@@ -342,16 +409,27 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		{
 			TEXT_SetTextColor(hItem, GUI_DARKGREEN);
 		}
-		if(Temp_Pres.Temperature > 25.0f)
+		else if(Temp_Pres.Temperature > 25.0f)
 		{
 			TEXT_SetTextColor(hItem, GUI_RED_COLOR);
 		}
-		if(Temp_Pres.Temperature < 22.0f)
+		else if(Temp_Pres.Temperature < 22.0f)
 		{
 			TEXT_SetTextColor(hItem, GUI_BLUE);
 		}
-		sprintf((char *)Data, "%.1f %cC, %.1f mm Hg", Temp_Pres.Temperature, 176, Temp_Pres.Pressure);
-		TEXT_SetText(hItem, (char *)Data);		   
+		sprintf((char *)Data, "%.1f %cC", Temp_Pres.Temperature, 176);
+		TEXT_SetText(hItem, (char *)Data);
+		if(Saved_Parameters.Pressure_mode)
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_7);
+			sprintf((char *)Data, "%.1f mm Hg", Temp_Pres.Pressure);
+			TEXT_SetText(hItem, (char *)Data);
+		}
+		else
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_7);			
+			TEXT_SetText(hItem, "");
+		}
 		pMsg->MsgId = 0;
 		break;
 				

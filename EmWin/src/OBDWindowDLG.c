@@ -40,7 +40,9 @@
 
 
 // USER START (Optionally insert additional defines)
+extern OBD_Errors_State_Typedef OBD_Errors_State;
 extern GUIHandles GuiHandles;
+uint8_t OBD_Enable_Flag = 0;
 // USER END
 
 /*********************************************************************
@@ -114,7 +116,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     TEXT_SetText(hItem, "NumError");
     TEXT_SetTextColor(hItem, GUI_RED_COLOR);
     TEXT_SetFont(hItem, GUI_FONT_24B_1);
-		TEXT_SetText(hItem, (char *)OBD_BUFFER);
+//		TEXT_SetText(hItem, (char *)OBD_BUFFER);
 //		TEXT_SetText(hItem, "");
     //
     // Initialization of 'Transcript_Text'
@@ -154,8 +156,18 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		BUTTON_SetFont(hItem, GUI_FONT_24B_1);
 		BUTTON_SetFocussable(hItem, 0);
     // USER START (Optionally insert additional code for further widget initialization)
+		OBD_Enable_Flag = Saved_Parameters.OBD_mode;
+		Saved_Parameters.OBD_mode = 0;
+		pMsg->MsgId = 0;
     // USER END
     break;
+	case WM_UPDATE_OBD_ERRORS:		
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
+    TEXT_SetTextColor(hItem, GUI_RED_COLOR);
+    TEXT_SetFont(hItem, GUI_FONT_24B_1);
+		TEXT_SetText(hItem, (char *)OBD_BUFFER);
+		pMsg->MsgId = 0;
+		break;
   case WM_NOTIFY_PARENT:
     Id    = WM_GetId(pMsg->hWinSrc);
     NCode = pMsg->Data.v;
@@ -182,6 +194,8 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
+				OBD_Errors_State = START_READ_ERRORS;
+				OBDReadErrors();
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)
@@ -196,6 +210,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
+				Saved_Parameters.OBD_mode = OBD_Enable_Flag;
 				WM_DeleteWindow(pMsg->hWin);
 				hWin = CreateMainWindow();				
         // USER END
