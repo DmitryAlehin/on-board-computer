@@ -77,7 +77,9 @@ typedef enum
 	START_READ_ERRORS = 0,
 	WAIT_ERROR,
 	READ_OBD_ERRORS,
-	CLEAR_OBD_ERRORS
+	CLEAR_OBD_ERRORS,
+	OBD_ERRORS_NOP,
+	OBD_ERRORS_WAIT_VIN
 }OBD_Errors_State_Typedef;
 
 void OBD_Init(void);

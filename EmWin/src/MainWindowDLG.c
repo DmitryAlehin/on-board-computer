@@ -45,7 +45,7 @@
 RTC_TimeTypeDef time;
 RTC_DateTypeDef date;
 GUIHandles GuiHandles;
-extern TnP Temp_Pres;
+extern Meteo_Data_Typedef Meteo_Data;
 extern OBD_General_States_Typedef OBD_General_State;
 // USER END
 
@@ -405,24 +405,24 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 	case WM_UPDATE_METEO:		
 		//вывод температуры
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
-		if((Temp_Pres.Temperature >= 22.0f) &&(Temp_Pres.Temperature <= 25.0f))
+		if((Meteo_Data.Temperature >= 22.0f) &&(Meteo_Data.Temperature <= 25.0f))
 		{
 			TEXT_SetTextColor(hItem, GUI_DARKGREEN);
 		}
-		else if(Temp_Pres.Temperature > 25.0f)
+		else if(Meteo_Data.Temperature > 25.0f)
 		{
 			TEXT_SetTextColor(hItem, GUI_RED_COLOR);
 		}
-		else if(Temp_Pres.Temperature < 22.0f)
+		else if(Meteo_Data.Temperature < 22.0f)
 		{
 			TEXT_SetTextColor(hItem, GUI_BLUE);
 		}
-		sprintf((char *)Data, "%.1f %cC", Temp_Pres.Temperature, 176);
+		sprintf((char *)Data, "%.1f %cC", Meteo_Data.Temperature, 176);
 		TEXT_SetText(hItem, (char *)Data);
 		if(Saved_Parameters.Pressure_mode)
 		{
 			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_7);
-			sprintf((char *)Data, "%.1f mm Hg", Temp_Pres.Pressure);
+			sprintf((char *)Data, "%.1f mm Hg", Meteo_Data.Pressure);
 			TEXT_SetText(hItem, (char *)Data);
 		}
 		else

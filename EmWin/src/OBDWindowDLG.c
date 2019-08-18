@@ -166,6 +166,11 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     TEXT_SetTextColor(hItem, GUI_RED_COLOR);
     TEXT_SetFont(hItem, GUI_FONT_24B_1);
 		TEXT_SetText(hItem, (char *)OBD_BUFFER);
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
+    TEXT_SetTextColor(hItem, GUI_RED_COLOR);
+    TEXT_SetFont(hItem, GUI_FONT_24B_1);
+		sprintf((char *)Data, "Number of errors:%d", CarParameters.NumberOfErrors);
+		TEXT_SetText(hItem, (char *)Data);
 		pMsg->MsgId = 0;
 		break;
   case WM_NOTIFY_PARENT:

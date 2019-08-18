@@ -2,6 +2,7 @@
 #define RDA5807M_H
 
 #include "i2c.h"
+#include <string.h>
 
 #define RDA5807M_ADDRESS 0x11
 #define RDA5807M_FIRST_REGISTER_WRITE 0x02

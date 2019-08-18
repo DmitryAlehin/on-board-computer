@@ -58,7 +58,7 @@ typedef struct {
 typedef struct {
 	float Temperature, Pressure;
 	bool Sensor; // 0 - Static, 1 - Full
-} TnP;
+} Meteo_Data_Typedef;
 
 /**
  * Initialize default parameters.

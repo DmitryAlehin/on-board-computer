@@ -78,7 +78,7 @@ volatile OBD_General_States_Typedef OBD_General_State = NOP;
 volatile OBD_Sign_States_Typedef OBD_Sign_State = OBD_OK;
 volatile OBD_Data_States_Typedef OBD_Data_State = WAIT_DATA;
 volatile OBD_Average_Cons_States_Typedef OBD_Average_Cons_State = CONSUMPTION_WAIT_RECEIVE;
-volatile OBD_Errors_State_Typedef OBD_Errors_State = WAIT_ERROR;
+volatile OBD_Errors_State_Typedef OBD_Errors_State = OBD_ERRORS_NOP;
 volatile BT_General_States_Typedef BT_General_State = WAIT_BT_INIT;
 volatile TDA7318_States_Typedef TDA7318_General_State = TDA7318_WAIT_INIT;
 volatile TDA7318_Volume_States_Typedef TDA7318_Volume_State = TDA7318_UNMUTE;
@@ -99,9 +99,7 @@ Saved_parameters_Typedef Saved_Parameters;
 RDA5807M_Data_Typedef RDA5807M_Data;
 extern GUIHandles GuiHandles;
 BMP280_HandleTypedef BMP280;
-TnP Temp_Pres;
-uint8_t  count;
-float Frequency;
+Meteo_Data_Typedef Meteo_Data;
 
 
 /* USER CODE END PTD */
@@ -398,7 +396,11 @@ void _OBD(void const * argument)
 	}
 		else
 		{
-			if(OBD_Errors_State != WAIT_ERROR)
+			if(OBD_General_State != OBD_INIT)
+			{				
+				OBD_Init();		
+			}
+			if(OBD_Errors_State != OBD_ERRORS_NOP)
 			{
 				OBDReadErrors();
 			}
@@ -479,15 +481,15 @@ void _Meteo(void const * argument)
 	
 	BMP280.addr = BMP280_I2C_ADDRESS_0;	
 	bmp280_init(&BMP280);
-	bmp280_read_float(&BMP280, &Temp_Pres.Temperature, &Temp_Pres.Pressure);
-	Temp_Pres.Pressure = Temp_Pres.Pressure/(float)133.3224;
+	bmp280_read_float(&BMP280, &Meteo_Data.Temperature, &Meteo_Data.Pressure);
+	Meteo_Data.Pressure = Meteo_Data.Pressure/(float)133.3224;
   /* Infinite loop */
   for(;;)
   {
     if(Saved_Parameters.Temperature_mode)
 		{				
-		bmp280_read_float(&BMP280, &Temp_Pres.Temperature, &Temp_Pres.Pressure);
-		Temp_Pres.Pressure = Temp_Pres.Pressure/(float)133.3224;
+		bmp280_read_float(&BMP280, &Meteo_Data.Temperature, &Meteo_Data.Pressure);
+		Meteo_Data.Pressure = Meteo_Data.Pressure/(float)133.3224;
 		msg.MsgId = WM_UPDATE_METEO;
 		}
 		osDelay(5000);
