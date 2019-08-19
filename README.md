@@ -27,4 +27,9 @@
 -отображение на экране температуры воздуха в салоне, атмосферного давления в мм.рт.ст. (режимы отображения отображать\не отображать можно выставить в настройках)  
 
 
-Система построена на ОСРВ FreeRTOS, GUI создан при помощи библиотеки EmWin.
+Система построена на ОСРВ FreeRTOS, GUI создан при помощи библиотеки EmWin.  
+
+Фото окон системы:  
+![Главное окно при ХХ](https://github.com/DmitryAlehin/on-board-computer/blob/master/Photo/MAIN_IDLE.jpg)  
+![Главное окно при езде](https://github.com/DmitryAlehin/on-board-computer/blob/master/Photo/MAIN_RIDE.jpg)  
+![Окно аудио при ХХ](https://github.com/DmitryAlehin/on-board-computer/blob/master/Photo/AUDIO_IDLE.jpg)
