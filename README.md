@@ -32,4 +32,7 @@
 Фото окон системы:  
 ![Главное окно при ХХ](https://github.com/DmitryAlehin/on-board-computer/blob/master/Photo/MAIN_IDLE.jpg)  
 ![Главное окно при езде](https://github.com/DmitryAlehin/on-board-computer/blob/master/Photo/MAIN_RIDE.jpg)  
-![Окно аудио при ХХ](https://github.com/DmitryAlehin/on-board-computer/blob/master/Photo/AUDIO_IDLE.jpg)
+![Окно аудио при ХХ](https://github.com/DmitryAlehin/on-board-computer/blob/master/Photo/AUDIO_IDLE.jpg)  
+![Окно аудио при езде](https://github.com/DmitryAlehin/on-board-computer/blob/master/Photo/AUDIO_RIDE.jpg)  
+![Окно эквалайзера](https://github.com/DmitryAlehin/on-board-computer/blob/master/Photo/EQUALIZER.jpg)  
+![Окно настроек](https://github.com/DmitryAlehin/on-board-computer/blob/master/Photo/SETTINGS.jpg) 
