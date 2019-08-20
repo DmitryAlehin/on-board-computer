@@ -102,7 +102,6 @@ void ConvertStructToArray(Saved_parameters_Typedef *Struct, uint8_t *Array)
 	Array[11] = Struct->Temperature_mode;
 	Array[12] = Struct->Treble;
 	Array[13] = Struct->Volume;
-//	memcpy(&mu.u32, &Struct->Average_consumption, sizeof(mu.u32));
 	Float_to_int.Float_value = Struct->Average_consumption;
 	Array[14] = Float_to_int.Array_value[0];
 	Array[15] = Float_to_int.Array_value[1];

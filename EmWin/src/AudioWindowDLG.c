@@ -311,12 +311,6 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
 		sprintf((char *)Data, "%02d:%02d", time.Hours, time.Minutes);
 		TEXT_SetText(hItem, (char *)Data);
-//		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_2);
-//		sprintf((char *)Data, "%.1f L/100km", Car_Param.Fuel_consumption);
-//		TEXT_SetText(hItem, (char *)Data);
-//		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
-//		sprintf((char *)Data, "%.1f V", CarParameters.Voltage);
-//		TEXT_SetText(hItem, (char *)Data);
 		if(Saved_Parameters.OBD_mode)
 		{
 			if(OBD_General_State == OBD_INIT)
@@ -384,32 +378,6 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
 				break;
 		}
-//		if(BT_State == BT_CONNECTED)
-//		{
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-//			TEXT_SetText(hItem, "Bluetooth connected");
-//			TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
-//		}
-//		if(BT_State == BT_DISCONNECTED)
-//		{
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-//			TEXT_SetText(hItem, "Bluetooth disconnected");
-//			TEXT_SetFont(hItem, GUI_FONT_32B_ASCII);
-//		}
-//		if(BT_State == BT_PLAY)
-//		{
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
-//			sprintf((char *)Data, "%c%c", 108, 108);
-//			BUTTON_SetText(hItem, (char *)Data);
-//			BUTTON_SetFocussable(hItem, 0);
-//		}
-//		if(BT_State == BT_PAUSE)
-//		{
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_7);
-//			sprintf((char *)Data, "%c", 13);
-//			BUTTON_SetText(hItem, (char *)Data);
-//			BUTTON_SetFocussable(hItem, 0);			
-//		}
 		if(BT_PowerMode == OFF)
 		{
 			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
@@ -565,26 +533,6 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		}
 		pMsg->MsgId = 0;
 		break;
-//	case WM_UPDATE_BT_POWERMODE:
-//		if(BT_PowerMode == OFF)
-//		{
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-//			TEXT_SetText(hItem, "Music player");
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);			
-//			TEXT_SetText(hItem, "");			
-//		}
-//		else if(BT_PowerMode == ON)
-//		{
-//			hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-//			TEXT_SetText(hItem, "Bluetooth");
-//		}
-//		pMsg->MsgId = 0;
-//		break;
-//	case WM_AUX:
-//		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
-//		TEXT_SetText(hItem, "AUX");
-//		pMsg->MsgId = 0;
-//		break;
 	case WM_RADIO:
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);
 		sprintf((char *)Data, "RADIO Freq %.2f", RDA5807M_Data.Frequency);
@@ -621,12 +569,14 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         // USER START (Optionally insert code for reacting on notification message)
 				if(Audio_Switch != AUX_SWITCH)
 				{
-					Audio_Switch = AUX_SWITCH;	
+					Audio_Switch = AUX_SWITCH;
+					BT_PowerMode = OFF;
 					TDA7318_SelectInput(Audio_Switch);
 				}		
 				else
 				{
-					Audio_Switch = INPUT_1_SWITCH;	
+					Audio_Switch = INPUT_1_SWITCH;
+					BT_PowerMode = OFF;					
 					TDA7318_SelectInput(Audio_Switch);
 				}
 				msg.MsgId = WM_UPDATE_AUDIO;
@@ -647,12 +597,14 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				if(RDA5807M_PowerMode == RDA5807M_OFF)
 				{					
 					Audio_Switch = RADIO_SWITCH;
+					BT_PowerMode = OFF;
 					TDA7318_SelectInput(Audio_Switch);
 					msg.MsgId = WM_UPDATE_AUDIO;
 				}
 				else if(RDA5807M_PowerMode == RDA5807M_ON)
 				{
 					Audio_Switch = INPUT_1_SWITCH;
+					BT_PowerMode = OFF;
 					TDA7318_SelectInput(Audio_Switch);
 					msg.MsgId = WM_UPDATE_AUDIO;
 				}
@@ -683,21 +635,13 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 				{
 					Audio_Switch = BT_SWITCH;
 					TDA7318_SelectInput(Audio_Switch);
-//					msg.MsgId = WM_UPDATE_BT_POWERMODE;
 				}
 				else
 				{
 					Audio_Switch = INPUT_1_SWITCH;
 					TDA7318_SelectInput(Audio_Switch);
 				}
-					msg.MsgId = WM_UPDATE_AUDIO;
-								
-//					HAL_GPIO_WritePin(BT_EN_GPIO_Port, BT_EN_Pin, GPIO_PIN_RESET);					
-					
-					
-//					msg.MsgId = WM_UPDATE_BT_POWERMODE;
-//					msg.MsgId = WM_UPDATE_AUDIO;
-				
+					msg.MsgId = WM_UPDATE_AUDIO;				
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)
@@ -808,7 +752,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
-				
+				TDA7318_Volume_State = TDA7318_UNMUTE;
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_0);
 				Volume = SLIDER_GetValue(hItem);
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_1);

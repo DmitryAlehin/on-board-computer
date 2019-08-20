@@ -16,16 +16,11 @@ void OBD_Init(void)
 					HAL_Delay(4000);
 					OBD_General_State = WAIT_INIT;
 					HAL_UART_Transmit(&huart1, "atws\r\n", 7, 100);
-					
-					
 					break;
 				/* если устройство отвечает и соединение установлено*/
 				case CONNECT:
-//					HAL_Delay(500);
 				OBD_General_State = WAIT_INIT;
 					HAL_UART_Transmit(&huart1, "attp1\r\n", 8, 100);
-				
-					
 					break;
 				/* отстуствие данных, отправка команды для проверки подключения*/
 				case NO_DATA:
@@ -36,30 +31,24 @@ void OBD_Init(void)
 					break;
 				/* удалить*/
 				case DISCONNECT:
-//					HAL_Delay(500);
 				HAL_Delay(100);
 				OBD_General_State = WAIT_INIT;
 					HAL_UART_Transmit(&huart1, "ati\r\n", 6, 100);
 					break;
 				/* протокол применен, отправка команды для получения текущего протокола*/
 				case ATTP_OK:
-//					HAL_Delay(500);
 				HAL_Delay(100);
 				OBD_General_State = WAIT_INIT;
 					HAL_UART_Transmit(&huart1, "atdp\r\n", 7, 100);
 					break;
 				/* протокол настроен правильно, отправка команды для получения VIN номера авто*/
 				case ATDP_OK:	
-//					HAL_Delay(50);
 					HAL_Delay(100);
 					OBD_General_State = WAIT_ATE;
 					HAL_UART_Transmit(&huart1, "ate0\r\n", 7, 100);
-					
 					break;
 				case ATE_OK:
-//					HAL_Delay(500);
 					HAL_Delay(500);
-//					OBD_General_State = WAIT_INIT;
 					if(OBD_Errors_State == OBD_ERRORS_WAIT_VIN)
 					{
 						HAL_UART_Transmit(&huart1, "0902\r\n", 7, 100);
@@ -73,8 +62,7 @@ void OBD_Init(void)
 					break;
 				/* VIN номер получен - устройство инициализировано, данные занесены в соотв. сруктуру данных*/ 
 				case VIN_INIT:
-					OBD_Errors_State = START_READ_ERRORS;
-//					OBD_Data_State = READY_TO_RECEIVE;
+//					OBD_Errors_State = START_READ_ERRORS;
 					OBD_General_State = OBD_INIT;					
 					break;
 				/* функция ничего не делает после инициализации устройства*/
@@ -103,7 +91,6 @@ void OBD_Update(void)
 			break;
 		/* получено напряжение, отправка команды для получения скорости*/
 		case VOLTAGE_DATA_COMPLETE:
-//			HAL_Delay(100);
 			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK) //проверка текущего заголовка
 			{
@@ -121,8 +108,6 @@ void OBD_Update(void)
 			break;
 			/* получено значение скорости, отправка команды для получения оборотов*/
 		case VSS_DATA_COMPLETE:
-//			HAL_Delay(100);
-//		HAL_Delay(100);
 			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK)
 			{
@@ -138,8 +123,6 @@ void OBD_Update(void)
 			break;
 			/* получено значение оборотов, отправка команды для получения температуры охлаждающей жидкости*/
 		case RPM_DATA_COMPLETE:
-//			HAL_Delay(100);
-//		HAL_Delay(100);
 			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK)
 			{
@@ -154,8 +137,6 @@ void OBD_Update(void)
 			break;
 			/* получено значение температуры ОЖ, отправка команды для получения температуры на впуске*/
 		case ECT_DATA_COMPLETE:
-//			HAL_Delay(100);
-//		HAL_Delay(100);
 			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK)
 			{
@@ -170,8 +151,6 @@ void OBD_Update(void)
 			break;
 			/* получено значение температуры на впуске, отправка команды для получения давления на впуске */
 		case IAT_DATA_COMPLETE:
-//			HAL_Delay(100);
-//		HAL_Delay(100);
 			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK)
 			{
@@ -186,8 +165,6 @@ void OBD_Update(void)
 			break;
 			/* получено значение давления на впуске, отправка команды для получения кратковременной подстройки топлива*/
 		case MAP_DATA_COMPLETE:
-//			HAL_Delay(100);
-//		HAL_Delay(100);
 			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK)
 			{
@@ -202,8 +179,6 @@ void OBD_Update(void)
 			break;
 			/* получено значение кратковременной подстройки топливаб отправка команды для получения долговременной подстройки топлива*/
 		case SHRTFT_DATA_COMPLETE:
-//			HAL_Delay(100);
-//		HAL_Delay(100);
 			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == PCM_OK)
 			{
@@ -218,8 +193,6 @@ void OBD_Update(void)
 			break;
 			/* получено значение кратковременной подстройки топлива, отправка команды для получения значения уровня топлива*/
 		case LONGFT_DATA_COMPLETE:
-//			HAL_Delay(100);
-//		HAL_Delay(100);
 			OBD_Data_State = WAIT_DATA;
 			if(OBD_Sign_State == IC_OK) //проверка текущего заголовка
 			{
@@ -317,25 +290,7 @@ void OBD_CheckState(uint8_t * buffer, CarParameters_Typedef *car)
 					OBD_General_State = ATTP_OK;
 				}
 				break;
-		}
-//		if(OBD_Sign_State == WAIT_IC) //если ожидаем включение заголовка IC
-//		{
-//			OBD_Sign_State = IC_OK;
-//			OBD_Data_State = LONGFT_DATA_COMPLETE;
-//		}
-//		else if(OBD_Sign_State == WAIT_PCM) //если ожидаем включение заголовка PCM
-//		{
-//			OBD_Sign_State = PCM_OK;
-//			OBD_Data_State = VOLTAGE_DATA_COMPLETE;
-//		}
-//		else if((OBD_Sign_State == OBD_OK) && (OBD_General_State == WAIT_INIT)) //вхождение при инициализации
-//		{
-//			OBD_General_State = ATTP_OK;		
-//		}
-//		else if((OBD_Sign_State == OBD_OK) && (OBD_General_State == WAIT_ATE)) 
-//		{
-//			OBD_General_State = ATE_OK;		
-//		}				
+		}			
 	}
 	/* ответ от сканера при применении протокола */
 	if(strncmp((char *)buffer,"SAE J1850 PWM\r\r>", 16) == 0)
@@ -367,10 +322,10 @@ void OBD_CheckState(uint8_t * buffer, CarParameters_Typedef *car)
 		{	
 			sprintf((char *)VIN[number - 1], "%c%c%c%c", htoi((char *)PIECE1), htoi((char *)PIECE2), htoi((char *)PIECE3), htoi((char *)PIECE4));
 			if(number == 5)
-			{
-				
+			{				
 				sprintf((char *)car->VIN_NUMBER, "%s%s%s%s%s", VIN[0], VIN[1], VIN[2], VIN[3], VIN[4]);
 				OBD_General_State = VIN_INIT;
+				msg.MsgId = WM_UPDATE_OBD_ERRORS;
 			}
 		}
 	}	

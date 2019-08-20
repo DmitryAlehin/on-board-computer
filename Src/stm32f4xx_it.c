@@ -248,18 +248,16 @@ void DMA1_Stream5_IRQHandler(void)
 	DMA_Base_Registers *regs = (DMA_Base_Registers *)hdma_usart2_rx.StreamBaseAddress;
 	if ((regs->ISR & (DMA_FLAG_TCIF0_4 << hdma_usart2_rx.StreamIndex)) != RESET)
   {
-		if(__HAL_DMA_GET_IT_SOURCE(&hdma_usart2_rx, DMA_IT_TC) != RESET)   // if the source is TC
+		if(__HAL_DMA_GET_IT_SOURCE(&hdma_usart2_rx, DMA_IT_TC) != RESET)
 		{
-			/* Clear the transfer complete flag */
 			regs->IFCR = DMA_FLAG_TCIF0_4 << hdma_usart2_rx.StreamIndex;
-			memcpy(&BT_BUFFER, &DMA_BUFFER_BT, DMA_BUFFER_BT_SIZE);   /* Copy first part */
+			memcpy(&BT_BUFFER, &DMA_BUFFER_BT, DMA_BUFFER_BT_SIZE);
 			for(uint8_t i=0; i<DMA_BUFFER_BT_SIZE; i++)
 			{
 				DMA_BUFFER_BT[i] = 0;
 			}
 			xHigherPriorityTaskWoken = pdFALSE;					
 			xQueueSendFromISR(QueueBTFromISR, &BT_BUFFER, &xHigherPriorityTaskWoken);
-			/*DMA stream won't start if all flags are not cleared first */
 			regs->IFCR = 0x3FU << hdma_usart2_rx.StreamIndex; // clear all interrupts
 			hdma_usart2_rx.Instance->M0AR = (uint32_t)DMA_BUFFER_BT;   /* Set memory address for DMA again */
 			hdma_usart2_rx.Instance->NDTR = DMA_BUFFER_BT_SIZE;    /* Set number of bytes to receive */
@@ -307,12 +305,12 @@ void TIM1_UP_TIM10_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-	if (huart1.Instance->SR & UART_FLAG_IDLE)           /* if Idle flag is set */
+	if (huart1.Instance->SR & UART_FLAG_IDLE)
 	{
-		volatile uint32_t tmp;                  /* Must be volatile to prevent optimizations */
-        tmp = huart1.Instance->SR;                       /* Read status register */
-        tmp = huart1.Instance->DR;                       /* Read data register */
-		hdma_usart1_rx.Instance->CR &= ~DMA_SxCR_EN;       /* Disabling DMA will force transfer complete interrupt if enabled */       
+		volatile uint32_t tmp;
+        tmp = huart1.Instance->SR;
+        tmp = huart1.Instance->DR;
+		hdma_usart1_rx.Instance->CR &= ~DMA_SxCR_EN; 
 	}
   /* USER CODE END USART1_IRQn 0 */
 //  HAL_UART_IRQHandler(&huart1);
@@ -327,12 +325,12 @@ void USART1_IRQHandler(void)
 void USART2_IRQHandler(void)
 {
   /* USER CODE BEGIN USART2_IRQn 0 */
-	if (huart2.Instance->SR & UART_FLAG_IDLE)           /* if Idle flag is set */
+	if (huart2.Instance->SR & UART_FLAG_IDLE)
 	{
-		volatile uint32_t tmp;                  /* Must be volatile to prevent optimizations */
-        tmp = huart2.Instance->SR;                       /* Read status register */
-        tmp = huart2.Instance->DR;                       /* Read data register */
-		hdma_usart2_rx.Instance->CR &= ~DMA_SxCR_EN;       /* Disabling DMA will force transfer complete interrupt if enabled */       
+		volatile uint32_t tmp;
+        tmp = huart2.Instance->SR;
+        tmp = huart2.Instance->DR;
+		hdma_usart2_rx.Instance->CR &= ~DMA_SxCR_EN;
 	}
   /* USER CODE END USART2_IRQn 0 */
 //  HAL_UART_IRQHandler(&huart2);
@@ -379,11 +377,10 @@ void DMA2_Stream2_IRQHandler(void)
 	DMA_Base_Registers *regs = (DMA_Base_Registers *)hdma_usart1_rx.StreamBaseAddress;
 	if ((regs->ISR & (DMA_FLAG_TCIF0_4 << hdma_usart1_rx.StreamIndex)) != RESET)
   {
-		if(__HAL_DMA_GET_IT_SOURCE(&hdma_usart1_rx, DMA_IT_TC) != RESET)   // if the source is TC
+		if(__HAL_DMA_GET_IT_SOURCE(&hdma_usart1_rx, DMA_IT_TC) != RESET)
 		{
-			/* Clear the transfer complete flag */
 			regs->IFCR = DMA_FLAG_TCIF0_4 << hdma_usart1_rx.StreamIndex;
-			memcpy(&OBD_BUFFER, &DMA_BUFFER_OBD, DMA_BUFFER_OBD_SIZE);   /* Copy first part */
+			memcpy(&OBD_BUFFER, &DMA_BUFFER_OBD, DMA_BUFFER_OBD_SIZE);
 			for(uint8_t i=0; i<DMA_BUFFER_OBD_SIZE; i++)
 			{
 				DMA_BUFFER_OBD[i] = 0;

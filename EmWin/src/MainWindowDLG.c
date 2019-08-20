@@ -222,7 +222,6 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     TEXT_SetFont(hItem, GUI_FONT_32B_1);
 		TEXT_SetText(hItem, "");
     // USER START (Optionally insert additional code for further widget initialization)
-//		LCD_Brightness(Saved_Parameters.Brightness);
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_0);
 		HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
 		sprintf((char *)Data, "%02d:%02d", time.Hours, time.Minutes);

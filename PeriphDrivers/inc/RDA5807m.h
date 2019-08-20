@@ -61,8 +61,6 @@
 #define RDA5807M_FLG_FMTRUE 0x0100
 #define RDA5807M_FLG_FMREADY 0x0080
 #define RDA5807M_FLG_BLOCKE 0x0010
-//Masks and constants for configuration parameters
-//NOTE: the entire family, including the RDA5800, all report the same ChipID.
 #define RDA5807M_CHIPID 0x58
 #define RDA5807M_CLKMODE_MASK 0x0070
 #define RDA5807M_CLKMODE_32K (0x0 << 4)

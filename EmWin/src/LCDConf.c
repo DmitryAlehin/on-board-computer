@@ -301,9 +301,7 @@ int LCD_X_DisplayDriver(unsigned LayerIndex, unsigned Cmd, void * pData) {
 
 			LcdWriteReg(0x0036); //rotation
 			LcdWriteData(0x0001);
-		//	LcdWriteData(0x0060);
-
-
+			
 			LcdWriteReg(0x00F0); //pixel data interface
 			LcdWriteData(0x0003);
 
@@ -315,16 +313,12 @@ int LCD_X_DisplayDriver(unsigned LayerIndex, unsigned Cmd, void * pData) {
 			LcdWriteReg(0x0029); //display on
 
 			LcdWriteReg(0x00BE); //set PWM for B/L
-		//	LcdWriteData(0x0006);
+			
 			LcdWriteData(0x0008);
 			LcdWriteData(0x0080);
-		//	//LcdWriteData(0x00f0);
-		//	
+			
 			LcdWriteData(0x0001);
-		//	LcdWriteData(0x00f0);
-		//	LcdWriteData(0x0000);
-		//	LcdWriteData(0x0000);
-
+			
 			LcdWriteReg(0x00d0);
 			LcdWriteData(0x000d);
     return 0;

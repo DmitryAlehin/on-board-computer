@@ -195,16 +195,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
 		TEXT_SetTextColor(hItem, GUI_BLUE_COLOR);
     TEXT_SetText(hItem, "");
-    // USER START (Optionally insert additional code for further widget initialization)
-//		TDA7318_SetVolume(Saved_Parameters.Volume);		
-//		TDA7318_SetBass(Saved_Parameters.Bass);
-//		TDA7318_SetTreble(Saved_Parameters.Treble);
-//		TDA7318_SetAmplification(Saved_Parameters.Amplification);
-//		TDA7318_SetAttenuation(TDA7318_SPEAKER_LF, Saved_Parameters.FL);
-//		TDA7318_SetAttenuation(TDA7318_SPEAKER_RF, Saved_Parameters.FR);
-//		TDA7318_SetAttenuation(TDA7318_SPEAKER_LR, Saved_Parameters.RL);
-//		TDA7318_SetAttenuation(TDA7318_SPEAKER_RR, Saved_Parameters.RR);
-		
+    // USER START (Optionally insert additional code for further widget initialization)		
 		TDA7318_SetVolume(Saved_Parameters.Volume);		
 		hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_0);
 		SLIDER_SetRange(hItem, 0, 28);
@@ -277,7 +268,6 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         // USER START (Optionally insert code for reacting on notification message)
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_SLIDER_1);
 				Saved_Parameters.Treble = SLIDER_GetValue(hItem);
-//				Saved_Parameters.Treble =~ (SLIDER_GetValue(hItem) - 16);
 				hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_8);
 				sprintf((char *) Data, "Value: %d", Saved_Parameters.Treble -14);
 				TEXT_SetText(hItem, (char *)Data);

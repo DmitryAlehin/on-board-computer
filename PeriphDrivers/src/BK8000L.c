@@ -2,7 +2,7 @@
 extern BT_General_States_Typedef BT_General_State;
 extern BT_States_Typedef BT_State;
 extern BT_Values_Typedef BT_Value;
-char * trash[2];
+int * trash[2];
 void BTCheckState(uint8_t * buffer, BT_Values_Typedef * Bluetooth)
 {
 	if(buffer[0] == 'O' && buffer[1] == 'N')
@@ -75,16 +75,12 @@ void BTCheckState(uint8_t * buffer, BT_Values_Typedef * Bluetooth)
 	}
 	if(buffer[0] == 'I' && buffer[1] == 'R')
 	{
-		if(sscanf((char *)buffer, "IR-%c%s%c", trash[0], Bluetooth->CALL_NUMBER, trash[1]) == 3)
+		if(sscanf((char *)buffer, "IR-%d%s%d", trash[0], Bluetooth->CALL_NUMBER, trash[1]) == 3)
 		{
 			BT_State = BT_CALL;
 			msg.MsgId = WM_UPDATE_BT;
 		}
 	}
-//	else
-//	{
-//		msg.MsgId = WM_UPDATE_BT;
-//	}	
 	for(uint8_t i = 0; i<DMA_BUFFER_BT_SIZE; i++)
 	{
 		buffer[i] = 0;

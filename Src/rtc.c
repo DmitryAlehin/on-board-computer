@@ -50,12 +50,7 @@ void MX_RTC_Init(void)
 	HAL_PWR_EnableBkUpAccess();
 	if(HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR19 ) == RTC_STATUS_TIME_OK)
 	{
-//		if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 59, RTC_WAKEUPCLOCK_CK_SPRE_16BITS) != HAL_OK)
-//		{
-//			Error_Handler();
-//		}
 		
-//		__HAL_RCC_RTC_ENABLE();
 	}
 	else
 	{
@@ -158,21 +153,6 @@ void RTC_Interrupt(void)
 __weak void RTC_WakeupCallback(void) {
 	/* If user needs this function, then they should be defined separatelly in your project */
 }
-
-//void RTC_WKUP_IRQHandler(void) {
-//	/* Check for RTC interrupt */
-//	if (__HAL_RTC_WAKEUPTIMER_GET_IT(&hrtc, RTC_IT_WUT) != RESET) {
-//		/* Call user function */
-//		TM_RTC_WakeupHandler();
-//		
-//		/* Clear interrupt flags */
-//		__HAL_RTC_WAKEUPTIMER_CLEAR_FLAG(&hrtc, RTC_FLAG_WUTF);
-//	}
-//	
-//	/* Clear EXTI line 22 bit */
-//	__HAL_RTC_WAKEUPTIMER_EXTI_CLEAR_FLAG();
-//}
-
 
 void RTC_Fix_Date(RTC_DateTypeDef *sDate)
 {

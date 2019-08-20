@@ -70,11 +70,8 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-//GUI_PID_STATE TS_State;
 WM_MESSAGE msg;
-
 volatile OBD_General_States_Typedef OBD_General_State = NOP;
-
 volatile OBD_Sign_States_Typedef OBD_Sign_State = OBD_OK;
 volatile OBD_Data_States_Typedef OBD_Data_State = WAIT_DATA;
 volatile OBD_Average_Cons_States_Typedef OBD_Average_Cons_State = CONSUMPTION_WAIT_RECEIVE;
@@ -168,21 +165,12 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
   Touch_Cal_Read(&matrix);
 	__HAL_RCC_CRC_CLK_ENABLE();
-//	BMP280.addr = BMP280_I2C_ADDRESS_0;
-//	bmp280_init_default_params(&BMP280_param);
-//	HAL_GPIO_WritePin(RADIO_EN_GPIO_Port, RADIO_EN_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(RADIO_BMP280_EN_GPIO_Port, RADIO_BMP280_EN_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(TDA7318_EN_GPIO_Port, TDA7318_EN_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(OBDII_EN_GPIO_Port, OBDII_EN_Pin, GPIO_PIN_RESET);
 	Car_Param.Average_Consumption = 0.0f;
 	GUI_Init();
 	CreateMainWindow();
-	
-//	TDA7318_SelectInput(Audio_Switch);
-//		Saved_Parameters.key = 41312;		
-//	OBD_General_State = NOP;
-//	W25Q_Read(RX_BUFFER,1);
-	
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -280,9 +268,6 @@ void _GUI(void const * argument)
 			case WM_UPDATE_METEO:
 				WM_SendMessage(GuiHandles.hMainWindow, &msg);
 				break;
-//			case WM_AUX:
-//				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
-//				break;
 			case WM_RADIO:
 				WM_SendMessage(GuiHandles.hAudioWindow, &msg);
 				break;
@@ -366,7 +351,7 @@ void _OBD(void const * argument)
 				MAP = CarParameters.MAP;
 				RPM = (CarParameters.RPM_A * 256.0f + CarParameters.RPM_B)/4.0f;
 				Fb = (Saved_Parameters.K / 100.0f) * (RPM / 60.0f) * MAP * 0.8f * 28.98f / (8.31441f * (IAT + 273.15f));
-				Ft = /*1000.0f * */(1.0f + 0.001f * (IAT - 20.0f)) * 3600.0f * Fb * (1.0f + ((SHRTFT + LONGFT) / 100.0f)) / (14.7f * 760.0f);
+				Ft = (1.0f + 0.001f * (IAT - 20.0f)) * 3600.0f * Fb * (1.0f + ((SHRTFT + LONGFT) / 100.0f)) / (14.7f * 760.0f);
 				Car_Param.LH_consumption = Ft;
 				
 				if(VSS > 0)

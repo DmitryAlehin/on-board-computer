@@ -4,16 +4,10 @@
 
 void SSD1963_Init(void)
 {
-//	LCD_RESET
-//  HAL_Delay(100);
-//  LCD_SET
-//  HAL_Delay(120);	 
-
 	SSD1963_SendCommand(0x00E2);	//PLL multiplier, set PLL clock to 120M
 	SSD1963_SendData(0x0023);	    //N=0x36 for 6.5M, 0x23 for 10M crystal
 	SSD1963_SendData(0x0002);
-	SSD1963_SendData(0x0004);
-	
+	SSD1963_SendData(0x0004);	
 	SSD1963_SendCommand(0x00E0);  // PLL enable
 	SSD1963_SendData(0x0001);
 	delay_time(1);
@@ -26,12 +20,7 @@ void SSD1963_Init(void)
 	SSD1963_SendData(0x0003);
 	SSD1963_SendData(0x0033);
 	SSD1963_SendData(0x0033);
-
-	//SSD1963_SendData(0x0000);
-	//SSD1963_SendData(0x00b4);
-	//SSD1963_SendData(0x00e7);
-
-
+	
 	SSD1963_SendCommand(0x00B0);	//LCD SPECIFICATION
 	SSD1963_SendData(0x0000);
 	SSD1963_SendData(0x0000);
@@ -69,57 +58,21 @@ void SSD1963_Init(void)
 
 	SSD1963_SendCommand(0x0036); //rotation
 	SSD1963_SendData(0x0001);
-//	SSD1963_SendData(0x0060);
-
 
 	SSD1963_SendCommand(0x00F0); //pixel data interface
 	SSD1963_SendData(0x0003);
 
-
 	delay_time(5);
-
-//	SSD1963_Clear(0xf800);
+	
 	SSD1963_SendCommand(0x0026); //display on
 	SSD1963_SendData(0x0001);
 
 	SSD1963_SendCommand(0x0029); //display on
 
-//	SSD1963_SendCommand(0x00BE); //set PWM for B/L
-//	SSD1963_SendData(0x0006);
-//	//SSD1963_SendData(0x0008);
-//	SSD1963_SendData(0x0080);
-//	//SSD1963_SendData(0x00f0);
-//	
-//	SSD1963_SendData(0x0001);
-//	SSD1963_SendData(0x00f0);
-//	SSD1963_SendData(0x0000);
-//	SSD1963_SendData(0x0000);
-
 	SSD1963_SendCommand(0x00d0);
 	SSD1963_SendData(0x000d);
 }
-//void SSD1963_Clear(uint16_t p)
-//{
-//	uint32_t l = 384000;
-//	SSD1963_SendCommand(0x002A);	
-//	SSD1963_SendData(0x0000);	    
-//	SSD1963_SendData(0x0000);
-//	SSD1963_SendData(HDP>>8);	    
-//	SSD1963_SendData(HDP&0X00ff);
-//  SSD1963_SendCommand(0x002b);	
-//	SSD1963_SendData(0x0000);	    
-//	SSD1963_SendData(0x0000);
-//	SSD1963_SendData(VDP>>8);	    
-//	SSD1963_SendData(VDP&0X00ff);
-//	SSD1963_SendCommand(0x002c);
-//	
-//	while(l--)
-//	{
-//	      
-//          	SSD1963_SendData(p);
-//		
-//	}
-//}
+
 void SSD1963_SendCommand(uint16_t command)
 {
 	*(__IO uint16_t *) (CMD_ADDR)= command;
@@ -231,12 +184,3 @@ void SSD1963_DrawCross(uint16_t Xpos,uint16_t Ypos)
   SSD1963_DrawLine(Xpos,Ypos-15,Xpos,Ypos-2,0xffff);
   SSD1963_DrawLine(Xpos,Ypos+2,Xpos,Ypos+15,0xffff);
 }
-
-//void delay_time(unsigned int i)
-//{
-//    unsigned int a;
-//    unsigned int b;
-//    for(b=0;b<i;b++)
-//    for(a=0;a<1000;a++);
-//}
-

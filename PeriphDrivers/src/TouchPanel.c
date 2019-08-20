@@ -9,25 +9,14 @@ Coordinate  display ;
 
 /* DisplaySample */
 Coordinate ScreenSample[3];
-/* LCD??µ???±? */
 Coordinate DisplaySample[3] =   {
-                      { 45, 45 }, // первая точка калибровки
-											{ 755 , 240}, // вторая
+                      { 45, 45 }, 
+											{ 755 , 240},
                       { 400, 400}
 	                            } ;
 
 /* Private define ------------------------------------------------------------*/
-#define THRESHOLD 300   // допуск (погрешность)
-//extern uint8_t FLAG;
-//extern GUI_PID_STATE PState;
-/*******************************************************************************
-* Function Name  : RD_AD
-* Description    : ¶???ADC?µ
-* Input          : None
-* Output         : None
-* Return         : ADS7843·µ»?¶?????????
-* Attention		 : None
-*******************************************************************************/
+#define THRESHOLD 300
 
 void TP_GetAdXY(int *x,int *y)  
 { 
@@ -35,7 +24,7 @@ void TP_GetAdXY(int *x,int *y)
 	unsigned char cmd, temp;
 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
   cmd = CHX;
-HAL_SPI_TransmitReceive(&hspi2, &cmd, (uint8_t *) &temp, 1, 3000); // отправляем команду на X
+HAL_SPI_TransmitReceive(&hspi2, &cmd, (uint8_t *) &temp, 1, 3000); 
 HAL_Delay(1); 
 
 cmd  = 0;
@@ -44,48 +33,19 @@ temp = 0;
 HAL_SPI_TransmitReceive(&hspi2, &cmd, (uint8_t *) &temp, 1, 3000);
   buff = temp<<4; 
 	cmd = CHY;
-HAL_SPI_TransmitReceive(&hspi2, &cmd, (uint8_t *) &temp, 1, 3000); // получаем младший байт и одновременно отправляем команду на Y
+HAL_SPI_TransmitReceive(&hspi2, &cmd, (uint8_t *) &temp, 1, 3000);
 HAL_Delay(1); 
   buff |= temp>>4; 
-  *x= ((buff >>4)) ; //получение Х
-
+  *x= ((buff >>4)) ;
 buff = 0;	
 cmd = 0;
 HAL_SPI_TransmitReceive(&hspi2, &cmd, (uint8_t *) &temp, 1, 3000);
   buff = temp<<4; 
 HAL_SPI_TransmitReceive(&hspi2, &cmd, (uint8_t *) &temp, 1, 3000);
   buff |= temp>>4; 
-  *y= ((buff >> 4)) ; //получение Y
+  *y= ((buff >> 4)) ; 
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
 }
-
-
-
-/*******************************************************************************
-* Function Name  : DrawCross
-* Description    : ???????????
-* Input          : - Xpos: Row Coordinate
-*                  - Ypos: Line Coordinate 
-* Output         : None
-* Return         : None
-* Attention		 : None
-*******************************************************************************/
-//void SSD1963_DrawCross(uint16_t Xpos,uint16_t Ypos) // рисуем крестик
-//{
-//  SSD1963_DrawLine(Xpos-15,Ypos,Xpos-2,Ypos,0xffff);
-//  SSD1963_DrawLine(Xpos+2,Ypos,Xpos+15,Ypos,0xffff);
-//  SSD1963_DrawLine(Xpos,Ypos-15,Xpos,Ypos-2,0xffff);
-//  SSD1963_DrawLine(Xpos,Ypos+2,Xpos,Ypos+15,0xffff);
-//}	
-
-/*******************************************************************************
-* Function Name  : Read_Ads7846
-* Description    : ?????? ?????????? Ads7846
-* Input          : None
-* Output         : None
-* Return         : Coordinate X Y
-* Attention		 : None
-*******************************************************************************/
 Coordinate *Read_Ads7846(void)
 {
   static Coordinate  screen;
@@ -100,24 +60,24 @@ Coordinate *Read_Ads7846(void)
 	buffer[1][count]=TP_Y[0];
 	count++;  
   }
-  while(!T_IRQ && count<9); /* пока есть нажатие на тач или идет получение 9 результатов АЦП */
-  if(count==9) /* если получили все 9 результатов АЦП */ 
+  while(!T_IRQ && count<9);
+  if(count==9)
   {      
-    temp[0]=(buffer[0][0]+buffer[0][1]+buffer[0][2])/3; // первое усреднение 1:3
-	temp[1]=(buffer[0][3]+buffer[0][4]+buffer[0][5])/3; // второе
-	temp[2]=(buffer[0][6]+buffer[0][7]+buffer[0][8])/3; //третье
+    temp[0]=(buffer[0][0]+buffer[0][1]+buffer[0][2])/3;
+	temp[1]=(buffer[0][3]+buffer[0][4]+buffer[0][5])/3;
+	temp[2]=(buffer[0][6]+buffer[0][7]+buffer[0][8])/3;
 
-	m0=temp[0]-temp[1];   // вычисление разницы в результатах
+	m0=temp[0]-temp[1];
 	m1=temp[1]-temp[2];
 	m2=temp[2]-temp[0];
 
-	m0=m0>0?m0:(-m0);    // проверка на отрицательность результата и приведение к "положительности"
+	m0=m0>0?m0:(-m0);
     m1=m1>0?m1:(-m1);
 	m2=m2>0?m2:(-m2);
-		/* проверка разницы в результатах, если больше порога (THRESHOLD) то выход  */
+	
 	if( m0>THRESHOLD  &&  m1>THRESHOLD  &&  m2>THRESHOLD ) return 0;
 	   
-	if(m0<m1) // вычисляем средний результат и записываем
+	if(m0<m1)
 	{
 	  if(m2<m0) 
 	    screen.x=(temp[0]+temp[2])/2;
@@ -128,9 +88,8 @@ Coordinate *Read_Ads7846(void)
 	  screen.x=(temp[0]+temp[2])/2;
 	else 
 	  screen.x=(temp[1]+temp[2])/2;
-
-		/*** то-же самое для Y ***/
-    temp[0]=(buffer[1][0]+buffer[1][1]+buffer[1][2])/3; 
+	
+  temp[0]=(buffer[1][0]+buffer[1][1]+buffer[1][2])/3; 
 	temp[1]=(buffer[1][3]+buffer[1][4]+buffer[1][5])/3; 
 	temp[2]=(buffer[1][6]+buffer[1][7]+buffer[1][8])/3; 
 	m0=temp[0]-temp[1];
@@ -157,22 +116,12 @@ Coordinate *Read_Ads7846(void)
   return 0; 
 }
 
-
-/*******************************************************************************
-* Function Name  : setCalibrationMatrix
-* Description    :  K A B C D E F
-* Input          : None
-* Output         : None
-* Return         : retTHRESHOLD 1 0
-* Attention		 : None
-*******************************************************************************/
 FunctionalState setCalibrationMatrix( Coordinate * displayPtr,
                           Coordinate * screenPtr,
                           Matrix * matrixPtr)
 {
 
   FunctionalState retTHRESHOLD = ENABLE ;
-  /* K=(X0-X2) (Y1-Y2)-(X1-X2) (Y0-Y2) */
   matrixPtr->Divider = ((screenPtr[0].x - screenPtr[2].x) * (screenPtr[1].y - screenPtr[2].y)) - 
                        ((screenPtr[1].x - screenPtr[2].x) * (screenPtr[0].y - screenPtr[2].y)) ;
 	
@@ -182,23 +131,17 @@ FunctionalState setCalibrationMatrix( Coordinate * displayPtr,
   }
   else
   {
-    /* A=((XD0-XD2) (Y1-Y2)-(XD1-XD2) (Y0-Y2))/K	*/
     matrixPtr->An = ((displayPtr[0].x - displayPtr[2].x) * (screenPtr[1].y - screenPtr[2].y)) - 
                     ((displayPtr[1].x - displayPtr[2].x) * (screenPtr[0].y - screenPtr[2].y)) ;
-	/* B=((X0-X2) (XD1-XD2)-(XD0-XD2) (X1-X2))/K	*/
     matrixPtr->Bn = ((screenPtr[0].x - screenPtr[2].x) * (displayPtr[1].x - displayPtr[2].x)) - 
                     ((displayPtr[0].x - displayPtr[2].x) * (screenPtr[1].x - screenPtr[2].x)) ;
-    /* C=(Y0(X2XD1-X1XD2)+Y1(X0XD2-X2XD0)+Y2(X1XD0-X0XD1))/K */
     matrixPtr->Cn = (screenPtr[2].x * displayPtr[1].x - screenPtr[1].x * displayPtr[2].x) * screenPtr[0].y +
                     (screenPtr[0].x * displayPtr[2].x - screenPtr[2].x * displayPtr[0].x) * screenPtr[1].y +
                     (screenPtr[1].x * displayPtr[0].x - screenPtr[0].x * displayPtr[1].x) * screenPtr[2].y ;
-    /* D=((YD0-YD2) (Y1-Y2)-(YD1-YD2) (Y0-Y2))/K	*/
     matrixPtr->Dn = ((displayPtr[0].y - displayPtr[2].y) * (screenPtr[1].y - screenPtr[2].y)) - 
                     ((displayPtr[1].y - displayPtr[2].y) * (screenPtr[0].y - screenPtr[2].y)) ;
-    /* E=((X0-X2) (YD1-YD2)-(YD0-YD2) (X1-X2))/K	*/
     matrixPtr->En = ((screenPtr[0].x - screenPtr[2].x) * (displayPtr[1].y - displayPtr[2].y)) - 
                     ((displayPtr[0].y - displayPtr[2].y) * (screenPtr[1].x - screenPtr[2].x)) ;
-    /* F=(Y0(X2YD1-X1YD2)+Y1(X0YD2-X2YD0)+Y2(X1YD0-X0YD1))/K */
     matrixPtr->Fn = (screenPtr[2].x * displayPtr[1].y - screenPtr[1].x * displayPtr[2].y) * screenPtr[0].y +
                     (screenPtr[0].x * displayPtr[2].y - screenPtr[2].x * displayPtr[0].y) * screenPtr[1].y +
                     (screenPtr[1].x * displayPtr[0].y - screenPtr[0].x * displayPtr[1].y) * screenPtr[2].y ;
@@ -206,11 +149,6 @@ FunctionalState setCalibrationMatrix( Coordinate * displayPtr,
   return( retTHRESHOLD ) ;
 }
 
-
-/*******************************************************************************
-* Function Name  : getDisplayPoint // Получение точки касания, результат в реальных пикселях.
-* Attention		 : None
-*******************************************************************************/
 FunctionalState getDisplayPoint(Coordinate * displayPtr,
                      Coordinate * screenPtr,
                      Matrix * matrixPtr )
@@ -218,13 +156,11 @@ FunctionalState getDisplayPoint(Coordinate * displayPtr,
   FunctionalState retTHRESHOLD =ENABLE ;
 
   if( matrixPtr->Divider != 0 )
-  {
-    /* XD = AX+BY+C */        
+  {      
     displayPtr->x = ( (matrixPtr->An * screenPtr->x) + 
                       (matrixPtr->Bn * screenPtr->y) + 
                        matrixPtr->Cn 
-                    ) / matrixPtr->Divider ;
-	/* YD = DX+EY+F */        
+                    ) / matrixPtr->Divider ;      
     displayPtr->y = ( (matrixPtr->Dn * screenPtr->x) + 
                       (matrixPtr->En * screenPtr->y) + 
                        matrixPtr->Fn 
@@ -246,13 +182,11 @@ void GetPoint_TS  (uint16_t *x, uint16_t *y)
 	Coordinate * screenPtr;
 
   if( matrixPtr->Divider != 0 )
-  {
-    /* XD = AX+BY+C */        
+  {       
     displayPtr->x = ( (matrixPtr->An * screenPtr->x) + 
                       (matrixPtr->Bn * screenPtr->y) + 
                        matrixPtr->Cn 
-                    ) / matrixPtr->Divider ;
-	/* YD = DX+EY+F */        
+                    ) / matrixPtr->Divider ;    
     displayPtr->y = ( (matrixPtr->Dn * screenPtr->x) + 
                       (matrixPtr->En * screenPtr->y) + 
                        matrixPtr->Fn 
@@ -262,16 +196,6 @@ void GetPoint_TS  (uint16_t *x, uint16_t *y)
 
 }
 
-
-
-/*******************************************************************************
-* Function Name  : TouchPanel_Calibrate
-* Description    : ?????
-* Input          : None
-* Output         : None
-* Return         : None
-* Attention		 : None
-*******************************************************************************/
 void TouchPanel_Calibrate(void)
 {
   uint8_t i;
@@ -292,13 +216,10 @@ void TouchPanel_Calibrate(void)
   	HAL_Delay(500);
   }
   setCalibrationMatrix( &DisplaySample[0],&ScreenSample[0],&matrix );
-//	SSD1963_Clear(BLACK);
-
-
 } 
 
-void Touch_Cal_Read (Matrix * matrixPtr) // здесь можно внести результаты ВАШЕГО дисплея, они у каждого дисплея значительно отличаются
-{																				// результат можно посмотрель в отладчике (дебаггере)
+void Touch_Cal_Read (Matrix * matrixPtr)
+{
 	matrixPtr->An = 44375;
 	matrixPtr->Bn = -355;
 	matrixPtr->Cn = -131900;
@@ -333,6 +254,3 @@ bool isTouch(void)
 		return false;
 	}
 }
-/*********************************************************************************************************
-      END FILE
-*********************************************************************************************************/

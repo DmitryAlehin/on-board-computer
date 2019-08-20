@@ -77,11 +77,7 @@ and delay function. Default time unit (tick), normally is
 
 int GUI_X_GetTime(void)
 {
-//	return ((int)HAL_GetTick());
   return ((int) xTaskGetTickCount());
-	
-	
-	
 }
 
 void GUI_X_Delay(int ms)

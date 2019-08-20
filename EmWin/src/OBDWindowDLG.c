@@ -171,6 +171,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     TEXT_SetFont(hItem, GUI_FONT_24B_1);
 		sprintf((char *)Data, "Number of errors:%d", CarParameters.NumberOfErrors);
 		TEXT_SetText(hItem, (char *)Data);
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_3);
+		sprintf((char *)Data, "VIN Number:%s", CarParameters.VIN_NUMBER);
+		TEXT_SetText(hItem, (char *)Data);
 		pMsg->MsgId = 0;
 		break;
   case WM_NOTIFY_PARENT:
